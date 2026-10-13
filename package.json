@@ -1,6 +1,6 @@
 {
   "name": "clade-studio",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "private": true,
   "description": "Offline browser-based phylogenetic tree editor with editable collapsed clades, rerooting, and taxon annotations.",
   "type": "module",
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "python3 build-offline.py",
-    "check": "node --check src/core.js && node --check src/app.js",
+    "check": "node --check src/i18n.js && node --check src/core.js && node --check src/app.js",
     "test": "node --test tests/*.test.js"
   }
 }

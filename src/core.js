@@ -1,3 +1,4 @@
+import {t} from './i18n.js';
 // Data and display state are separate: collapsing never changes the source tree.
 export const DEFAULTS = Object.freeze({layout:'rectangular', metric:'length', rowGap:22, treeWidth:620, fontSize:14, branchWidth:1.4, support:true, lengths:false, italic:true, alignLabels:false, underscores:true, scale:true, font:'sans', customFont:'', title:true});
 export const FONT_FAMILIES = Object.freeze({sans:'Arial, sans-serif',serif:'"Times New Roman", serif',helvetica:'Helvetica, Arial, sans-serif',georgia:'Georgia, serif',verdana:'Verdana, sans-serif',calibri:'Calibri, Arial, sans-serif',cambria:'Cambria, Georgia, serif',palatino:'"Palatino Linotype", Palatino, serif',mono:'"Courier New", monospace',consolas:'Consolas, monospace',malgun:'"Malgun Gothic", "맑은 고딕", sans-serif',batang:'Batang, "바탕", serif'});
@@ -5,7 +6,7 @@ export function cleanFontName(value){return typeof value==='string'?value.replac
 export function fontFamilyFor(options={}){const custom=cleanFontName(options.customFont);if(options.font==='custom'&&custom)return `${JSON.stringify(custom)}, Arial, sans-serif`;return Object.hasOwn(FONT_FAMILIES,options.font)?FONT_FAMILIES[options.font]:FONT_FAMILIES.sans;}
 export const SAMPLE = "((((Chilobrachys_sp._A1:0.027,Chilobrachys_sp._A2:0.023)99/100:0.034,(Chilobrachys_sp._A3:0.033,Chilobrachys_sp._A4:0.029)97/99:0.028)100/100:0.049,((Chilobrachys_sp._B1:0.029,Chilobrachys_sp._B2:0.025)94/98:0.036,(Chilobrachys_sp._B3:0.024,Chilobrachys_sp._B4:0.031)98/100:0.029)98/99:0.051)100/100:0.04,(((Chilobrachys_sp._C1:0.03,Chilobrachys_sp._C2:0.022)99/100:0.035,(Chilobrachys_sp._C3:0.02,Chilobrachys_sp._C4:0.031)95/99:0.026)97/99:0.047,((Chilobrachys_sp._D1:0.027,Chilobrachys_sp._D2:0.036)91/96:0.041,(Chilobrachys_sp._D3:0.029,Chilobrachys_sp._D4:0.028)96/100:0.03)99/100:0.04)100/100:0.046,(Outgroup_A:0.075,Outgroup_B:0.089)100/100:0.12);";
 export const clamp=(v,min,max)=>Math.max(min,Math.min(max,Number(v)));
-const error=(message,pos)=>new Error(`${message}${pos===undefined?'':` (문자 ${pos+1})`}`);
+const error=(message,pos)=>new Error(t(message)+(pos===undefined?'':t(' (문자 {position})',{position:pos+1})));
 export function parseNewick(input){
   const text=String(input).replace(/^\uFEFF/,'').trim(); let i=0,serial=0;
   if(!text)throw error('트리 텍스트가 비어 있습니다.');

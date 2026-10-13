@@ -1,6 +1,8 @@
 # Clade Studio
 
-**브라우저에서 실행하는 오프라인 계통수 편집기 · 수정 버전 1.7**
+**브라우저에서 실행하는 오프라인 계통수 편집기 · 수정 버전 1.8**
+
+[English](README_EN.md) · [ภาษาไทย](README_TH.md)
 
 Newick·NEXUS·IQ-TREE 트리를 불러와 분기군을 접고, 접힌 도형의 크기·라벨·부트스트랩 위치·분류군 색상을 조절합니다. 설치나 서버 없이 HTML 파일 하나로 실행합니다.
 
@@ -9,8 +11,10 @@ An offline, browser-based phylogenetic tree editor with independently resizable 
 ## 실행하기
 
 1. 이 저장소를 ZIP으로 내려받고 압축을 풉니다.
-2. [Clade_Studio_Offline_v1.7.html](Clade_Studio_Offline_v1.7.html) 또는 [index.html](index.html)을 Chrome이나 Edge에서 엽니다. 두 파일의 내용은 같습니다.
+2. [한국어 시작 파일](Clade_Studio_Offline_v1.8.html), [영어 시작 파일](Clade_Studio_Offline_v1.8_EN.html), [태국어 시작 파일](Clade_Studio_Offline_v1.8_TH.html) 중 하나를 Chrome이나 Edge에서 엽니다. [index.html](index.html)은 한국어로 시작합니다.
 3. **트리 열기**를 누르거나 트리 파일을 화면에 끌어 놓습니다.
+
+오른쪽 위 **언어 / Language / ภาษา** 메뉴에서 한국어·영어·태국어를 바로 전환할 수 있습니다. 세 파일의 기능은 같으며 시작 언어만 다릅니다. 언어 선택은 해당 시작 파일의 브라우저 설정으로 저장되며, 트리·학명·직접 입력한 라벨·분류군 이름과 프로젝트 파일을 바꾸지 않습니다. 브라우저 저장을 사용할 수 없는 경우 파일의 기본 언어로 시작합니다.
 
 일반 사용에는 Node.js, Python, 인터넷 연결이 필요하지 않습니다. 바로 확인하려면 앱의 예제 트리 또는 [examples/demo.nwk](examples/demo.nwk)를 사용하십시오. 예제는 기능 설명을 위한 가상 데이터입니다.
 
@@ -18,6 +22,7 @@ An offline, browser-based phylogenetic tree editor with independently resizable 
 
 | 기능 | 설명 |
 | --- | --- |
+| UI 언어 | 한국어·영어·태국어 전환, 언어별 시작 파일, 메뉴·도움말·오류 메시지 번역 |
 | 트리 불러오기 | Newick, NEXUS의 TRANSLATE·다중 트리, IQ-TREE `.treefile`·`.contree` |
 | 트리 표시 | 직각·원형, 원본 가지 길이 또는 위상 표시, 확대·이동 |
 | 분기군 접기 | 하위 데이터를 보존하면서 접기·펼치기 |
@@ -107,13 +112,16 @@ node --check .build/bundle-check.js
 
 Windows에서 `python3` 명령이 없으면 `py -3 build-offline.py`를 사용하십시오.
 
-빌드하면 저장소 루트에 `index.html`과 `Clade_Studio_Offline_v{버전}.html`이 생성됩니다. 버전은 `src/index.html`의 `clade-studio-version`에서 읽습니다. 기능을 수정할 때는 버전과 `CHANGELOG.md`를 함께 갱신한 뒤 다시 빌드합니다. 생성된 HTML 대신 `src/`의 원본 코드를 수정하십시오.
+빌드하면 저장소 루트에 `index.html`, `Clade_Studio_Offline_v{버전}.html`, `Clade_Studio_Offline_v{버전}_EN.html`, `Clade_Studio_Offline_v{버전}_TH.html`이 생성됩니다. 버전은 `src/index.html`의 `clade-studio-version`에서 읽습니다. 기능을 수정할 때는 버전과 `CHANGELOG.md`를 함께 갱신한 뒤 다시 빌드합니다. 생성된 HTML 대신 `src/`의 원본 코드를 수정하십시오.
 
 | 경로 | 용도 |
 | --- | --- |
 | `index.html` | 최신 단일 HTML 실행 파일 |
-| `Clade_Studio_Offline_v1.7.html` | 버전이 표시된 실행 파일 |
+| `Clade_Studio_Offline_v1.8.html` | 버전이 표시된 한국어 시작 파일 |
+| `Clade_Studio_Offline_v1.8_EN.html` | 영어 시작 파일 |
+| `Clade_Studio_Offline_v1.8_TH.html` | 태국어 시작 파일 |
 | `src/index.html` | UI 구성과 버전 메타데이터 |
+| `src/i18n.js` | 세 언어 번역, 언어 선택, 사용자 데이터와 분리한 UI 번역 |
 | `src/style.css` | UI 스타일과 오프라인 커서 |
 | `src/core.js` | 파서, 트리 배치·재루팅, 프로젝트 검증 |
 | `src/app.js` | 화면 조작, SVG 렌더링, 저장·내보내기 |
