@@ -893,10 +893,10 @@ export const CATALOG = Object.freeze({
     "en": "Case-insensitive",
     "th": "ไม่แยกตัวพิมพ์ใหญ่และเล็ก"
   },
-  "예: Chilobrachys 또는 natanicharum": {
-    "ko": "예: Chilobrachys 또는 natanicharum",
-    "en": "For example: Chilobrachys or natanicharum",
-    "th": "ตัวอย่าง: Chilobrachys หรือ natanicharum"
+  "예: Araneus 또는 diadematus": {
+    "ko": "예: Araneus 또는 diadematus",
+    "en": "For example: Araneus or diadematus",
+    "th": "ตัวอย่าง: Araneus หรือ diadematus"
   },
   "분류군 색 HEX": {
     "ko": "분류군 색 HEX",
