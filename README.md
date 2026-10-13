@@ -9,7 +9,7 @@ An offline, browser-based phylogenetic tree editor with independently resizable 
 ## 실행하기
 
 1. 이 저장소를 ZIP으로 내려받고 압축을 풉니다.
-2. **[Clade_Studio_Offline_v1.7.html](Clade_Studio_Offline_v1.7.html)** 또는 **[index.html](index.html)**을 Chrome이나 Edge에서 엽니다. 두 파일의 내용은 같습니다.
+2. [Clade_Studio_Offline_v1.7.html](Clade_Studio_Offline_v1.7.html) 또는 [index.html](index.html)을 Chrome이나 Edge에서 엽니다. 두 파일의 내용은 같습니다.
 3. **트리 열기**를 누르거나 트리 파일을 화면에 끌어 놓습니다.
 
 일반 사용에는 Node.js, Python, 인터넷 연결이 필요하지 않습니다. 바로 확인하려면 앱의 예제 트리 또는 [examples/demo.nwk](examples/demo.nwk)를 사용하십시오. 예제는 기능 설명을 위한 가상 데이터입니다.
