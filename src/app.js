@@ -86,23 +86,6 @@ function draw(){
  }
  bounds={x:minX-35,y:minY-24,width:Math.max(200,maxX-minX+70),height:Math.max(160,maxY-minY+52)};applyView();
 }
-function drawGroups(defs,background,foreground,textLayer,fallbackRight){
- if(options.layout!=='rectangular')return fallbackRight;const active=groupState.groups.filter(g=>g.runs.length);if(!active.length)return fallbackRight;
- let labelLeft=layout.width+10,right=fallbackRight;try{const b=textLayer.getBBox();labelLeft=b.x;right=b.x+b.width;}catch{}
- const widths=[],starts=[];for(const group of active){let width=0;if(group.showName){for(const line of group.name.split('\n')){const t=appendLabel(foreground,{'font-family':fontFamilyFor(options),'font-size':group.labelSize,'font-weight':600},line,{italicMode:group.italic?'scientific':'none'});try{width=Math.max(width,t.getBBox().width);}catch{width=Math.max(width,line.length*group.labelSize*.65);}t.remove();}}widths[group.lane]=Math.max(widths[group.lane]||0,(group.showBar?group.barWidth:0)+width+28,group.background!=='none'?group.backgroundWidth||0:0);}
- let cursor=right+22;for(let i=0;i<widths.length;i++){starts[i]=cursor;cursor+=(widths[i]||24)+18;}
- active.forEach((group,i)=>{const x=starts[group.lane],gradientId=`taxon-gradient-${i}`,backgroundColor=group.backgroundColor||group.color;
-  if(group.background==='gradient'){const grad=append(defs,'linearGradient',{id:gradientId,x1:'0%',x2:'100%',y1:'0%',y2:'0%'});append(grad,'stop',{offset:'0%','stop-color':backgroundColor,'stop-opacity':0});append(grad,'stop',{offset:'100%','stop-color':backgroundColor,'stop-opacity':group.opacity});}
-  for(const run of group.runs){const h=Math.max(1,run.bottom-run.top),y=run.top;
-   if(group.background!=='none'){const left=group.backgroundScope==='full'?0:group.backgroundScope==='labels'?labelLeft:x-8,end=x+widths[group.lane];append(background,'rect',{x:left,y,width:Math.max(1,end-left),height:h,fill:group.background==='gradient'?`url(#${gradientId})`:backgroundColor,'fill-opacity':group.background==='solid'?group.opacity:1});}
-   if(group.showBar)append(foreground,'rect',{x,y,width:group.barWidth,height:h,fill:group.color});
-   if(group.showName){const lines=group.name.split('\n'),step=group.labelSize*1.3,first=(run.top+run.bottom)/2-(lines.length-1)*step/2+group.labelSize*.32;lines.forEach((line,j)=>appendLabel(foreground,{x:group.labelPosition==='center'?x+widths[group.lane]/2:x+(group.showBar?group.barWidth:0)+10,'text-anchor':group.labelPosition==='center'?'middle':'start',y:first+j*step,fill:'#111111','font-size':group.labelSize,'font-weight':600,'font-family':fontFamilyFor(options)},line,{italicMode:group.italic?'scientific':'none'}));}
-  }
- });
- return cursor;
-}
-
-
 // Render every delimitation column on the live SVG, including its export clone.
 function drawDelimitation(svg,defs,startX,fontFamily){
  if(!delimitation.settings.show||!delimMatched.methods.length||options.layout!=='rectangular')return;
@@ -302,6 +285,23 @@ for(const [id,key,kind] of [
   mutate(()=>{delimitation.settings[key]=value;delimitation=normalizeDelimitation(delimitation);},{fit:true});
  });
 }
+
+function drawGroups(defs,background,foreground,textLayer,fallbackRight){
+ if(options.layout!=='rectangular')return fallbackRight;const active=groupState.groups.filter(g=>g.runs.length);if(!active.length)return fallbackRight;
+ let labelLeft=layout.width+10,right=fallbackRight;try{const b=textLayer.getBBox();labelLeft=b.x;right=b.x+b.width;}catch{}
+ const widths=[],starts=[];for(const group of active){let width=0;if(group.showName){for(const line of group.name.split('\n')){const t=appendLabel(foreground,{'font-family':fontFamilyFor(options),'font-size':group.labelSize,'font-weight':600},line,{italicMode:group.italic?'scientific':'none'});try{width=Math.max(width,t.getBBox().width);}catch{width=Math.max(width,line.length*group.labelSize*.65);}t.remove();}}widths[group.lane]=Math.max(widths[group.lane]||0,(group.showBar?group.barWidth:0)+width+28,group.background!=='none'?group.backgroundWidth||0:0);}
+ let cursor=right+22;for(let i=0;i<widths.length;i++){starts[i]=cursor;cursor+=(widths[i]||24)+18;}
+ active.forEach((group,i)=>{const x=starts[group.lane],gradientId=`taxon-gradient-${i}`,backgroundColor=group.backgroundColor||group.color;
+  if(group.background==='gradient'){const grad=append(defs,'linearGradient',{id:gradientId,x1:'0%',x2:'100%',y1:'0%',y2:'0%'});append(grad,'stop',{offset:'0%','stop-color':backgroundColor,'stop-opacity':0});append(grad,'stop',{offset:'100%','stop-color':backgroundColor,'stop-opacity':group.opacity});}
+  for(const run of group.runs){const h=Math.max(1,run.bottom-run.top),y=run.top;
+   if(group.background!=='none'){const left=group.backgroundScope==='full'?0:group.backgroundScope==='labels'?labelLeft:x-8,end=x+widths[group.lane];append(background,'rect',{x:left,y,width:Math.max(1,end-left),height:h,fill:group.background==='gradient'?`url(#${gradientId})`:backgroundColor,'fill-opacity':group.background==='solid'?group.opacity:1});}
+   if(group.showBar)append(foreground,'rect',{x,y,width:group.barWidth,height:h,fill:group.color});
+   if(group.showName){const lines=group.name.split('\n'),step=group.labelSize*1.3,first=(run.top+run.bottom)/2-(lines.length-1)*step/2+group.labelSize*.32;lines.forEach((line,j)=>appendLabel(foreground,{x:group.labelPosition==='center'?x+widths[group.lane]/2:x+(group.showBar?group.barWidth:0)+10,'text-anchor':group.labelPosition==='center'?'middle':'start',y:first+j*step,fill:'#111111','font-size':group.labelSize,'font-weight':600,'font-family':fontFamilyFor(options)},line,{italicMode:group.italic?'scientific':'none'}));}
+  }
+ });
+ return cursor;
+}
+
 
 function applyView(){$('viewportGroup').setAttribute('transform',`translate(${view.x},${view.y}) scale(${view.k})`);$('zoomValue').textContent=`${Math.round(view.k*100)}%`;}
 function fitView(){const r=$('canvasViewport').getBoundingClientRect();if(!r.width||!r.height)return;view.k=Math.max(.015,Math.min(1.5,Math.min((r.width-34)/bounds.width,(r.height-34)/bounds.height)));view.x=(r.width-bounds.width*view.k)/2-bounds.x*view.k;view.y=(r.height-bounds.height*view.k)/2-bounds.y*view.k;applyView();}
