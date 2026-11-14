@@ -1,0 +1,7 @@
+Number of delimited species: 2
+Species 1:
+A1
+A2
+
+Species 2:
+B1
