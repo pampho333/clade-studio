@@ -15,7 +15,7 @@ export function parseNewick(input){
   function comments(){const out=[];ws();while(text[i]==='['){out.push(comment());ws();}return out;}
   function name(){ws();if(text[i]==="'"){i++;let s='',closed=false;while(i<text.length){if(text[i]==="'"){if(text[i+1]==="'"){s+="'";i+=2;}else{i++;closed=true;break;}}else{s+=text[i++];}}if(!closed)throw error('닫히지 않은 따옴표입니다.',i);return s;}
     let start=i;while(i<text.length&&!"(),:;[]".includes(text[i]))i++;return text.slice(start,i).trim();}
-  function node(depth){if(depth>500)throw error('500단계보다 깊은 트리는 지원하지 않습니다.');if(++serial>10000)throw error('노드 10,000개까지 불러올 수 있습니다.');const n={id:`n${serial}`,name:'',length:null,children:[],comments:comments()};
+  function node(depth){if(depth>500)throw error('500단계보다 깊은 트리는 지원하지 않습니다.');if(++serial>100000)throw error('노드 10,000개까지 불러올 수 있습니다.');const n={id:`n${serial}`,name:'',length:null,children:[],comments:comments()};
     if(text[i]==='('){i++;do{ws();if(text[i]===')'||text[i]===','||i>=text.length)throw error('빈 하위 노드입니다.',i);n.children.push(node(depth+1));ws();if(text[i]===','){i++;continue;}break;}while(true);if(text[i]!==')')throw error('닫는 괄호가 필요합니다.',i);i++;}
     n.comments.push(...comments());n.name=name();n.comments.push(...comments());
     if(text[i]===':'){i++;n.comments.push(...comments());ws();let start=i;while(i<text.length&&!",);[".includes(text[i]))i++;let raw=text.slice(start,i).trim();if(!/^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/.test(raw)||!Number.isFinite(Number(raw)))throw error('가지 길이가 올바른 숫자가 아닙니다.',start);n.length=Number(raw);n.comments.push(...comments());}
@@ -134,7 +134,7 @@ export function layoutTree(tree,styles,options){
 export function revealAncestors(id,index,styles){let p=index.parents.get(id);while(p){if(styles[p])styles[p].collapsed=false;p=index.parents.get(p);}}
 export function normalizeOptions(raw={}){const o={...DEFAULTS};for(const k of ['support','lengths','italic','alignLabels','underscores','scale','title'])if(typeof raw[k]==='boolean')o[k]=raw[k];for(const[k,min,max]of[['rowGap',6,100],['treeWidth',180,1400],['fontSize',8,30],['branchWidth',.5,6]])if(Number.isFinite(raw[k]))o[k]=clamp(raw[k],min,max);if(['rectangular','circular'].includes(raw.layout))o.layout=raw.layout;if(['length','topology'].includes(raw.metric))o.metric=raw.metric;if(Object.hasOwn(FONT_FAMILIES,raw.font)||raw.font==='custom')o.font=raw.font;o.customFont=cleanFontName(raw.customFont);return o;}
 export function validateProject(raw){
- if(raw?.format!=='clade-studio'||raw.version!==1)throw error('지원하는 Clade Studio 프로젝트 파일이 아닙니다.');let serial=0;const ids=new Set();function rec(n,d){if(!n||typeof n!=='object'||!Array.isArray(n.children)||typeof n.name!=='string'||typeof n.id!=='string'||!/^n\d+$/.test(n.id)||ids.has(n.id))throw error('프로젝트의 노드 데이터가 올바르지 않습니다.');if(++serial>10000||d>500)throw error('프로젝트의 트리가 지원 크기를 초과합니다.');ids.add(n.id);if(n.length!==null&&!Number.isFinite(n.length))throw error('프로젝트의 가지 길이가 올바르지 않습니다.');return{id:n.id,name:n.name.slice(0,4000),length:n.length,...(Object.hasOwn(n,'branchSupport')?{branchSupport:isSupportValue(n.branchSupport)?n.branchSupport:null}:{}),...(n.rooted===true?{rooted:true}:{}),...(n.syntheticRoot===true?{syntheticRoot:true}:{}),comments:(Array.isArray(n.comments)?n.comments:[]).filter(c=>typeof c==='string'&&/^\[[\s\S]*\]$/.test(c)),children:n.children.map(c=>rec(c,d+1))};}
+ if(raw?.format!=='clade-studio'||raw.version!==1)throw error('지원하는 Clade Studio 프로젝트 파일이 아닙니다.');let serial=0;const ids=new Set();function rec(n,d){if(!n||typeof n!=='object'||!Array.isArray(n.children)||typeof n.name!=='string'||typeof n.id!=='string'||!/^n\d+$/.test(n.id)||ids.has(n.id))throw error('프로젝트의 노드 데이터가 올바르지 않습니다.');if(++serial>100000||d>500)throw error('프로젝트의 트리가 지원 크기를 초과합니다.');ids.add(n.id);if(n.length!==null&&!Number.isFinite(n.length))throw error('프로젝트의 가지 길이가 올바르지 않습니다.');return{id:n.id,name:n.name.slice(0,4000),length:n.length,...(Object.hasOwn(n,'branchSupport')?{branchSupport:isSupportValue(n.branchSupport)?n.branchSupport:null}:{}),...(n.rooted===true?{rooted:true}:{}),...(n.syntheticRoot===true?{syntheticRoot:true}:{}),comments:(Array.isArray(n.comments)?n.comments:[]).filter(c=>typeof c==='string'&&/^\[[\s\S]*\]$/.test(c)),children:n.children.map(c=>rec(c,d+1))};}
  const tree=rec(raw.tree,0),styles={};for(const id of ids){const r=raw.styles?.[id];if(!r||typeof r!=='object')continue;const s={collapsed:!!r.collapsed};for(const[k,min,max]of[['width',0,100000],['height',8,360],['labelSize',8,36],['supportDx',-100000,100000],['supportDy',-100000,100000]])if(Number.isFinite(r[k]))s[k]=clamp(r[k],min,max);for(const k of ['color','fill'])if(/^#[0-9a-f]{6}$/i.test(r[k]))s[k]=r[k];if(typeof r.label==='string')s.label=r.label.slice(0,4000);if(typeof r.italic==='boolean')s.italic=r.italic;if(['inherit','scientific','custom','all','none'].includes(r.italicMode))s.italicMode=r.italicMode;if(Array.isArray(r.italicRanges))s.italicRanges=normalizeItalicRanges(r.italicRanges,4000);if(['start','middle','end'].includes(r.supportAnchor))s.supportAnchor=r.supportAnchor;if(['auto','manual'].includes(r.widthMode))s.widthMode=r.widthMode;if(['triangle','rectangle','ellipse'].includes(r.shape))s.shape=r.shape;styles[id]=s;}
  return {tree,styles,groups:normalizeGroups(raw.groups,ids),options:normalizeOptions(raw.options),title:typeof raw.title==='string'?raw.title.slice(0,200):'Untitled tree',sample:raw.sample===true};
 }
@@ -160,4 +160,195 @@ export function resolveGroups(tree,groups,layout,options){
  // Overlapping and nested ranges receive separate columns on the right.
  const lanes=[];for(const g of resolved){const spans=g.runs.map(r=>{const extra=Math.max(0,(g.name.split('\n').length*g.labelSize*1.3-(r.bottom-r.top))/2);return{top:r.top-extra,bottom:r.bottom+extra};});let lane=0;while(lanes[lane]?.some(a=>spans.some(b=>a.top<b.bottom&&b.top<a.bottom)))lane++;g.lane=lane;(lanes[lane]??=[]).push(...spans);}
  return {groups:resolved,branchColors,labelColors,partialCount:resolved.reduce((sum,g)=>sum+g.partial.length,0)};
+}
+
+
+// Species delimitation comparison (v1.9): pure data processing without network access.
+export const DELIMITATION_DEFAULTS = Object.freeze({
+  show:true, barWidth:11, columnGap:24, labelPosition:'right',
+  showLabels:false, headerRotation:'horizontal', colorMode:'alternate',
+  solidColor:'#333333', singleton:'bar', consensus:false,
+  disagreements:false, legend:true
+});
+const delimName = v => String(v??'').trim();
+const delimGroup = v => delimName(v).slice(0,256);
+export const normalizeTaxon = v => delimName(v).replace(/['"]/g,'').replace(/[\s_]+/g,' ').trim();
+const pick = (obj,keys) => keys.find(k => Object.hasOwn(obj,k));
+export function normalizeDelimitation(input={}){
+ const raw=input&&typeof input==='object'?input:{},rawSettings=raw.settings||{};
+ const settings={...DELIMITATION_DEFAULTS};
+ for(const k of ['show','showLabels','consensus','disagreements','legend'])if(typeof rawSettings[k]==='boolean')settings[k]=rawSettings[k];
+ for(const [k,low,high] of [['barWidth',3,35],['columnGap',4,100]])if(Number.isFinite(rawSettings[k]))settings[k]=clamp(rawSettings[k],low,high);
+ for(const [k,choices] of [['labelPosition',['right','center']],['headerRotation',['horizontal','vertical']],['colorMode',['alternate','group','single']],['singleton',['bar','dot']]])if(choices.includes(rawSettings[k]))settings[k]=rawSettings[k];
+ if(/^#[0-9a-f]{6}$/i.test(rawSettings.solidColor||''))settings.solidColor=rawSettings.solidColor;
+ const methods=(Array.isArray(raw.methods)?raw.methods:[]).slice(0,24).filter(x=>x&&typeof x==='object').map((m,i)=>{
+  const assignments={};const source=m.assignments&&typeof m.assignments==='object'&&!Array.isArray(m.assignments)?m.assignments:{};
+  for(const [name,group] of Object.entries(source).slice(0,30000))if(delimName(name)&&delimGroup(group))assignments[delimName(name).slice(0,4000)]=delimGroup(group);
+  return {id:typeof m.id==='string'&&/^[\w-]{1,100}$/.test(m.id)?m.id:'method-'+i,
+   name:delimName(m.name).slice(0,120)||'Method '+(i+1),assignments};
+ });
+ const manualMap={};if(raw.manualMap&&typeof raw.manualMap==='object')for(const [source,target] of Object.entries(raw.manualMap)){
+  if(typeof target==='string'&&source.length<4001&&target.length<4001&&source.trim()&&target.trim())manualMap[source]=target;
+ }
+ return {methods,manualMap,settings};
+}
+function csvCells(text,delimiter){
+ const rows=[];let row=[],cell='',quoted=false;
+ for(let i=0;i<text.length;i++){
+  const ch=text[i];if(ch==='"'){if(quoted&&text[i+1]==='"'){cell+='"';i++;}else quoted=!quoted;}
+  else if(ch===delimiter&&!quoted){row.push(cell.trim());cell='';}
+  else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&text[i+1]==='\n')i++;row.push(cell.trim());if(row.some(Boolean))rows.push(row);row=[];cell='';}
+  else cell+=ch;
+ }
+ if(quoted)throw new Error('Unclosed quoted field');
+ row.push(cell.trim());if(row.some(Boolean))rows.push(row);return rows;
+}
+export function parseDelimitationTable(text,format='auto',filename=''){
+ const raw=String(text??'').replace(/^\uFEFF/,'').trim();
+ if(!raw)throw new Error('Empty species delimitation file');
+ const named=(name,assignments)=>[{name,assignments}];
+ const forced=String(format).toLowerCase(),file=String(filename).toLowerCase();
+ if(forced==='abgd'||(forced==='auto'&&/^\s*Group\s*\[\s*\d+\s*\]\s*n\s*:/mi.test(raw))){
+  const assignments={};let groups=0;
+  for(const line of raw.split(/\r?\n/)){const m=line.match(/^\s*Group\s*\[\s*(\d+)\s*\]\s*n\s*:\s*(\d+)\s*;\s*id\s*:\s*(.+)\s*$/i);if(!m)continue;
+   const names=m[3].trim().split(/\s+/).filter(Boolean);
+   if(names.length!==Number(m[2]))throw new Error('ABGD group '+m[1]+' count does not match n');
+   for(const name of names){if(Object.hasOwn(assignments,name))throw new Error('Duplicate specimen: '+name);assignments[name]='Group '+m[1];}groups++;
+  }
+  if(!groups)throw new Error('No ABGD groups found');return named('ABGD',assignments);
+ }
+ if(forced==='bptp'||forced==='mptp'||(forced==='auto'&&/(?:PTPMLPartition|PTPhSupportPartition|mptp)/i.test(file))||
+  (forced==='auto'&&/^\s*Species\s+\d+\s*(?:\(\s*support\s*=|:)/mi.test(raw))){
+  const assignments={};let current=null,groups=0,seenSection=false;
+  for(const line of raw.split(/\r?\n/)){
+   const v=line.trim();const sp=v.match(/^Species\s+(\d+)\s*(?:\([^)]*\))?\s*:?\s*$/i);
+   if(sp){current='Species '+sp[1];groups++;continue;}
+   if(v.startsWith('#')){if(groups&&/partition/i.test(v)){break;}if(groups&&!seenSection){break;}continue;}
+   if(!current||!v||/^(Command:|Number of|Null-model|Best score|Number of delimited)/i.test(v))continue;
+   const taxa=v.split(/\s*,\s*/).map(x=>x.trim()).filter(Boolean);
+   for(const name of taxa){if(/\s/.test(name)&&!/^['"]/.test(name))continue;
+    const cleaned=name.replace(/^['"]|['"]$/g,'');if(Object.hasOwn(assignments,cleaned)&&assignments[cleaned]!==current)throw new Error('Duplicate PTP specimen: '+cleaned);
+    assignments[cleaned]=current;}
+  }
+  if(!groups||!Object.keys(assignments).length)throw new Error('No species partition found');
+  return named(forced==='mptp'||/mptp/i.test(file)?'mPTP':'bPTP',assignments);
+ }
+ const delimiter=(raw.split(/\r?\n/,1)[0].includes('\t')?'\t':',');
+ const rows=csvCells(raw,delimiter);
+ if(rows.length<2&&forced!=='asap')throw new Error('A data table needs a header and rows');
+ if(forced==='asap'||(forced==='auto'&&/Partition_\d+\.csv$/i.test(file)&&rows[0].length===2)){
+  const a={};for(const r of rows){if(r.length<2||!delimName(r[0])||!delimGroup(r[1]))continue;if(Object.hasOwn(a,r[0])&&a[r[0]]!==r[1])throw new Error('Conflicting ASAP assignment');a[r[0]]=r[1];}
+  if(!Object.keys(a).length)throw new Error('No ASAP assignments');return named('ASAP',a);
+ }
+ const headers=rows[0].map(h=>h.toLowerCase().trim().replace(/[\s_-]+/g,''));
+ const find=names=>headers.findIndex(h=>names.includes(h));
+ const gmyc=find(['gmycspec']), sample=find(['samplename','sampleid','processid','taxon','tip','label']);
+ if(forced==='gmyc'||(forced==='auto'&&gmyc>=0&&sample>=0)){
+  if(gmyc<0||sample<0)throw new Error('Expected GMYC_spec and sample_name columns');
+  const a={};for(const r of rows.slice(1))if(r[sample]&&r[gmyc])a[r[sample]]=r[gmyc];
+  return named('GMYC',a);
+ }
+ const bin=find(['binuri','bin']),boldName=find(['processid','sampleid','recordid']);
+ if(forced==='bold'||(forced==='auto'&&bin>=0&&boldName>=0)){
+  if(bin<0||boldName<0)throw new Error('Expected BOLD processid/sampleid and bin_uri columns');
+  const a={};for(const r of rows.slice(1))if(r[boldName]&&r[bin])a[r[boldName]]=r[bin];
+  return named('BIN',a);
+ }
+ const tipCol=find(['taxon','tip','tipname','sample','samplename','name','label','terminal','processid','sampleid']);
+ const methodCol=find(['method','algorithm','analysis']);
+ const groupCol=find(['group','cluster','species','delimitation','partition']);
+ if(forced==='long'||(forced==='auto'&&tipCol>=0&&methodCol>=0&&groupCol>=0)){
+  if(tipCol<0||methodCol<0||groupCol<0)throw new Error('Long table needs taxon, method, group columns');
+  const output=new Map();for(const r of rows.slice(1)){const [tip,method,group]=[r[tipCol],r[methodCol],r[groupCol]];if(!tip||!method||!group)continue;
+   if(!output.has(method))output.set(method,{});if(Object.hasOwn(output.get(method),tip)&&output.get(method)[tip]!==group)throw new Error('Conflicting assignment: '+tip);
+   output.get(method)[tip]=group;}
+  return [...output].map(([name,assignments])=>({name,assignments}));
+ }
+ if(forced==='wide'||forced==='auto'){
+  if(rows[0].length<2)throw new Error('Wide table needs at least two columns');
+  const result=rows[0].slice(1).map(n=>({name:n,assignments:{}}));
+  if(result.some(x=>!x.name))throw new Error('Empty method header');
+  for(const r of rows.slice(1)){if(!r[0])continue;result.forEach((m,i)=>{if(r[i+1]){if(Object.hasOwn(m.assignments,r[0])&&m.assignments[r[0]]!==r[i+1])throw new Error('Conflicting assignment: '+r[0]);m.assignments[r[0]]=r[i+1];}});}
+  return result;
+ }
+ throw new Error('Unsupported species delimitation format');
+}
+export function matchDelimitation(tree,raw){
+ const state=normalizeDelimitation(raw),leaves=[];walk(tree,n=>{if(!n.children.length)leaves.push(n);});
+ const exact=new Map(),normalized=new Map();
+ for(const n of leaves){const a=exact.get(n.name)||[];a.push(n);exact.set(n.name,a);const key=normalizeTaxon(n.name),b=normalized.get(key)||[];b.push(n);normalized.set(key,b);}
+ const incoming=new Set(state.methods.flatMap(m=>Object.keys(m.assignments))),pairs=new Map(),unmatched=[];
+ let exactCount=0,normalizedCount=0,manualCount=0;
+ for(const name of incoming){
+  let possibilities=[],mode='';const target=state.manualMap[name];
+  if(target&&exact.has(target)){possibilities=exact.get(target);mode='manual';}
+  else if(exact.has(name)){possibilities=exact.get(name);mode='exact';}
+  else{possibilities=normalized.get(normalizeTaxon(name))||[];mode='normalized';}
+  if(possibilities.length===1){pairs.set(name,possibilities[0].id);if(mode==='exact')exactCount++;else if(mode==='normalized')normalizedCount++;else manualCount++;}
+  else unmatched.push(name);
+ }
+ const matchedIds=new Set(pairs.values()),missing=leaves.filter(n=>!matchedIds.has(n.id)).map(n=>n.name);
+ const methods=state.methods.map(m=>{
+  const byId=new Map();for(const [name,group] of Object.entries(m.assignments)){const id=pairs.get(name);if(id)byId.set(id,group);}
+  return {...m,byId};
+ });
+ return {methods,settings:state.settings,manualMap:state.manualMap,pairs,unmatched,missing,matched:pairs.size,
+  exact:exactCount,normalized:normalizedCount,manual:manualCount,leaves};
+}
+export function delimitationRuns(tree,layout,method){
+ const values=method.byId||new Map(),groups=new Map(),post=[];
+ walk(tree,n=>{post.push(n);if(!n.children.length&&values.has(n.id)){
+  const g=values.get(n.id);if(!groups.has(g))groups.set(g,[]);groups.get(g).push(n.id);
+ }});
+ const statuses=new Map();
+ for(let i=post.length-1;i>=0;i--){
+  const n=post[i];if(!n.children.length)statuses.set(n.id,values.get(n.id)||null);
+  else{let value=undefined;for(const c of n.children){const next=statuses.get(c.id);if(value===undefined)value=next;else if(value!==next)value='__MIXED__';}statuses.set(n.id,value===undefined?null:value);}
+ }
+ const nonMonophyletic=new Set();const parents=layout.index.parents,depths=layout.index.depths;
+ const lca=(a,b)=>{let aa=a,bb=b;while(depths.get(aa)>depths.get(bb))aa=parents.get(aa);while(depths.get(bb)>depths.get(aa))bb=parents.get(bb);while(aa!==bb){aa=parents.get(aa);bb=parents.get(bb);}return aa;};
+ for(const [g,ids] of groups){if(ids.length<2)continue;let ancestor=ids[0];for(let i=1;i<ids.length;i++)ancestor=lca(ancestor,ids[i]);if(layout.index.counts.get(ancestor)!==ids.length)nonMonophyletic.add(g);}
+ const runs=[];let current=null;const terminals=layout.terminals||[];
+ for(let i=0;i<terminals.length;i++){
+  const v=terminals[i],group=statuses.get(v.id),mixed=group==='__MIXED__',missing=group==null;
+  const half=(v.collapsed?v.style.height:Math.max(12,v.style.labelSize||14))/2;
+  const top=v.y-half,bottom=v.y+half;
+  if(missing){current=null;continue;}
+  if(current&&current.group===group&&!mixed&&!current.mixed&&current.last===i-1){current.last=i;current.bottom=bottom;current.tipCount+=v.count;continue;}
+  current={group,mixed,first:i,last:i,top,bottom,tipCount:v.count,collapsed:!!v.collapsed};
+  runs.push(current);if(mixed)current=null;
+ }
+ const seen=new Map();for(const r of runs)if(!r.mixed)seen.set(r.group,(seen.get(r.group)||0)+1);
+ for(const r of runs)r.split=!r.mixed&&(seen.get(r.group)>1||nonMonophyletic.has(r.group));
+ return {runs,nonMonophyletic,groups,statuses};
+}
+const choose2=n=>n*(n-1)/2;
+export function delimitationAgreement(methodA,methodB){
+ const a=methodA.byId||new Map(),b=methodB.byId||new Map(),cntA=new Map(),cntB=new Map(),cells=new Map();
+ let n=0;for(const [id,gA] of a){const gB=b.get(id);if(!gB)continue;n++;cntA.set(gA,(cntA.get(gA)||0)+1);cntB.set(gB,(cntB.get(gB)||0)+1);
+  const key=JSON.stringify([gA,gB]);cells.set(key,(cells.get(key)||0)+1);}
+ const both=[...cells.values()].reduce((x,y)=>x+choose2(y),0),sameA=[...cntA.values()].reduce((x,y)=>x+choose2(y),0),sameB=[...cntB.values()].reduce((x,y)=>x+choose2(y),0);
+ const total=choose2(n),expected=total?sameA*sameB/total:0,denom=(sameA+sameB)/2-expected,union=sameA+sameB-both;
+ const jaccard=union?both/union:1;
+ const ari=denom? (both-expected)/denom:(n<2||both===sameA&&both===sameB?1:0);
+ return {n,sharedPairs:both,jaccard,ari};
+}
+export function consensusAssignments(matched){
+ const result=new Map(),ms=matched.methods;if(!ms.length)return result;
+ const members=ms.map(m=>{const map=new Map();for(const [id,group] of m.byId){if(!map.has(group))map.set(group,new Set());map.get(group).add(id);}return map;});
+ for(const [group,ids] of members[0]){const [first]=ids;
+  if(!ms.every((m,j)=>{const other=m.byId.get(first),set=members[j].get(other);return set?.size===ids.size&&[...ids].every(id=>set.has(id));}))continue;
+  for(const id of ids)result.set(id,group);
+ }
+ return result;
+}
+export function delimitationSummary(tree,layout,matched){
+ const rows=matched.methods.map(m=>{
+  const data=delimitationRuns(tree,layout,m),sizes=[...data.groups.values()].map(x=>x.length);
+  return {method:m.name,groups:sizes.length,singletons:sizes.filter(x=>x===1).length,
+   nonMonophyletic:[...data.nonMonophyletic].sort(),assigned:m.byId.size};
+ });
+ const pairs=[];for(let i=0;i<matched.methods.length;i++)for(let j=i+1;j<matched.methods.length;j++)
+  pairs.push({a:matched.methods[i].name,b:matched.methods[j].name,...delimitationAgreement(matched.methods[i],matched.methods[j])});
+ return {rows,pairs};
 }
