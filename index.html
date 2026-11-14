@@ -284,6 +284,7 @@ html[lang=th] .tool-button,html[lang=th] .segmented button{line-height:1.6}
 <dialog id="delimDialog" class="delim-dialog">
  <div class="dialog-header"><div><span class="eyebrow">SPECIES DELIMITATION</span><h2>종 구분 결과 비교 열</h2></div><button class="icon-button" data-close="delimDialog" aria-label="닫기"><svg><use href="#i-close"/></svg></button></div>
  <p class="muted-note">자료는 브라우저 안에서만 처리됩니다. 파일을 계속 추가하면 방법별 열이 만들어집니다.</p>
+ <p class="muted-note">bPTP: PTPMLPartition은 기본 ML 분할, PTPhSupportPartition은 별도 후보 분할로 불러옵니다. PTPPartitonSummary는 여러 후보 그룹이 겹쳐 종 구분 열로 처리하지 않습니다.</p>
  <div class="delim-import">
   <label for="delimFormat">입력 형식</label>
   <select id="delimFormat"><option value="auto">자동 감지</option><option value="wide">넓은 표 · CSV/TSV</option><option value="long">긴 표 · CSV/TSV</option><option value="asap">ASAP Partition CSV</option><option value="abgd">ABGD groupe TXT</option><option value="bptp">bPTP partition TXT</option><option value="mptp">mPTP species TXT</option><option value="gmyc">GMYC spec.list</option><option value="bold">BOLD BIN CSV</option></select>
@@ -2557,7 +2558,13 @@ const CATALOG = Object.freeze({
   "Conflicting assignment: {tip}": {"ko":"말단 {tip}의 그룹 지정이 충돌합니다.","en":"Conflicting assignment: {tip}","th":"ข้อมูลการจัดกลุ่มของปลายกิ่ง {tip} ขัดแย้งกัน"},
   "Wide table needs at least two columns": {"ko":"넓은 표에는 최소 두 열이 필요합니다.","en":"Wide table needs at least two columns","th":"ตารางแบบกว้างต้องมีอย่างน้อยสองคอลัมน์"},
   "Empty method header": {"ko":"방법 열의 제목이 비어 있습니다.","en":"Empty method header","th":"หัวคอลัมน์ของวิธีว่างเปล่า"},
-  "Unsupported species delimitation format": {"ko":"지원하지 않는 종 구분 파일 형식입니다.","en":"Unsupported species delimitation format","th":"รูปแบบข้อมูลการจำแนกชนิดนี้ยังไม่รองรับ"}
+  "Unsupported species delimitation format": {"ko":"지원하지 않는 종 구분 파일 형식입니다.","en":"Unsupported species delimitation format","th":"รูปแบบข้อมูลการจำแนกชนิดนี้ยังไม่รองรับ"},
+  "PTP summary contains overlapping candidate groups; import PTPMLPartition or PTPhSupportPartition instead": {"ko":"PTP summary에는 서로 겹치는 후보 그룹이 있습니다. PTPMLPartition 또는 PTPhSupportPartition 파일을 사용하십시오.","en":"PTP summary contains overlapping candidate groups; import PTPMLPartition or PTPhSupportPartition instead.","th":"ไฟล์สรุป PTP มีกลุ่มตัวเลือกที่ซ้อนทับกัน โปรดนำเข้าไฟล์ PTPMLPartition หรือ PTPhSupportPartition แทน"},
+  "GMYC web summary has no tip memberships; export a spec.list membership table": {"ko":"GMYC 웹 결과 요약에는 말단별 그룹 정보가 없습니다. R splits의 spec.list 구성원 표를 내보내십시오.","en":"The GMYC web summary has no tip memberships; export a membership table from R splits spec.list.","th":"สรุปผล GMYC บนเว็บไม่มีข้อมูลสมาชิกปลายกิ่ง โปรดส่งออกตารางสมาชิกจาก spec.list ใน R splits"},
+  "PTP group {group} has no members": {"ko":"PTP 그룹 {group}에 말단이 없습니다.","en":"PTP group {group} has no members.","th":"กลุ่ม PTP {group} ไม่มีสมาชิก"},
+  "Invalid PTP specimen name: {name}": {"ko":"PTP 말단 이름 형식이 올바르지 않습니다: {name}","en":"Invalid PTP specimen name: {name}","th":"ชื่อสมาชิก PTP ไม่ถูกต้อง: {name}"},
+  "PTP summary was skipped (not an independent partition): {files}": {"ko":"PTP summary는 독립적인 분할 결과가 아니므로 건너뛰었습니다: {files}","en":"Skipped the PTP summary because it is not an independent partition: {files}","th":"ข้ามไฟล์สรุป PTP เพราะไม่ใช่ผลการแบ่งกลุ่มที่เป็นอิสระ: {files}"},
+  "bPTP: PTPMLPartition은 기본 ML 분할, PTPhSupportPartition은 별도 후보 분할로 불러옵니다. PTPPartitonSummary는 여러 후보 그룹이 겹쳐 종 구분 열로 처리하지 않습니다.": {"ko":"bPTP: PTPMLPartition은 기본 ML 분할, PTPhSupportPartition은 별도 후보 분할로 불러옵니다. PTPPartitonSummary는 여러 후보 그룹이 겹쳐 종 구분 열로 처리하지 않습니다.","en":"bPTP: PTPMLPartition is the default ML partition; PTPhSupportPartition is a separate candidate partition. PTPPartitonSummary lists overlapping candidate groups and cannot be imported as a delimitation column.","th":"bPTP: ใช้ PTPMLPartition เป็นผลแบ่งกลุ่มแบบ ML หลัก ส่วน PTPhSupportPartition เป็นผลตัวเลือกอีกแบบหนึ่ง ไฟล์ PTPPartitonSummary มีชุดกลุ่มตัวเลือกซ้อนทับกัน จึงไม่สามารถใช้เป็นคอลัมน์การจำแนกชนิดได้"}
 });
 
 // Data and display state are separate: collapsing never changes the source tree.
@@ -2746,7 +2753,8 @@ function normalizeDelimitation(input={}){
   const assignments={};const source=m.assignments&&typeof m.assignments==='object'&&!Array.isArray(m.assignments)?m.assignments:{};
   for(const [name,group] of Object.entries(source).slice(0,30000))if(delimName(name)&&delimGroup(group))assignments[delimName(name).slice(0,4000)]=delimGroup(group);
   return {id:typeof m.id==='string'&&/^[\w-]{1,100}$/.test(m.id)?m.id:'method-'+i,
-   name:delimName(m.name).slice(0,120)||'Method '+(i+1),assignments};
+   name:delimName(m.name).slice(0,120)||'Method '+(i+1),assignments,
+   ...(['bptp-ml','bptp-high','bptp','mptp'].includes(m.sourceFormat)?{sourceFormat:m.sourceFormat}:{})};
  });
  const manualMap={};if(raw.manualMap&&typeof raw.manualMap==='object')for(const [source,target] of Object.entries(raw.manualMap)){
   if(typeof target==='string'&&source.length<4001&&target.length<4001&&source.trim()&&target.trim())manualMap[source]=target;
@@ -2778,21 +2786,51 @@ function parseDelimitationTable(text,format='auto',filename=''){
   }
   if(!groups)throw new Error(t('No ABGD groups found'));return named('ABGD',assignments);
  }
+ // A PTP summary lists overlapping candidate groups, NOT one valid partition.
+ // The web-server filename misspells "Partition" as "Partiton".
+ if(/PTPPartit(?:on|ion)Summary/i.test(file) ||
+    (/^\s*[\w.-]+(?:\s*,\s*[\w.-]+)*\s*:\s*(?:0?\.\d+|1(?:\.0+)?)\s*$/m.test(raw) &&
+     !/^\s*Species\s+\d+/mi.test(raw) && /(?:PTP|species)/i.test(file))){
+  throw new Error(t('PTP summary contains overlapping candidate groups; import PTPMLPartition or PTPhSupportPartition instead'));
+ }
+ // The species.h-its.org GMYC web page provides cluster counts, not tip membership.
+ if(/^\s*#\s*Result of GMYC species delimitation/mi.test(raw) ||
+    (/^\s*number of ML clusters\s*:/mi.test(raw) && /threshold time\s*:/i.test(raw))){
+  throw new Error(t('GMYC web summary has no tip memberships; export a spec.list membership table'));
+ }
  if(forced==='bptp'||forced==='mptp'||(forced==='auto'&&/(?:PTPMLPartition|PTPhSupportPartition|mptp)/i.test(file))||
-  (forced==='auto'&&/^\s*Species\s+\d+\s*(?:\(\s*support\s*=|:)/mi.test(raw))){
-  const assignments={};let current=null,groups=0,seenSection=false;
+   (forced==='auto'&&/^\s*Species\s+\d+\s*(?:\(\s*support\s*=|:)/mi.test(raw))){
+  const assignments={};let current=null,groups=0,membersInGroup=0;
+  const closeGroup=()=>{
+   if(current&&membersInGroup===0)throw new Error(t('PTP group {group} has no members',{group:current}));
+  };
   for(const line of raw.split(/\r?\n/)){
-   const v=line.trim();const sp=v.match(/^Species\s+(\d+)\s*(?:\([^)]*\))?\s*:?\s*$/i);
-   if(sp){current='Species '+sp[1];groups++;continue;}
-   if(v.startsWith('#')){if(groups&&/partition/i.test(v)){break;}if(groups&&!seenSection){break;}continue;}
-   if(!current||!v||/^(Command:|Number of|Null-model|Best score|Number of delimited)/i.test(v))continue;
-   const taxa=v.split(/\s*,\s*/).map(x=>x.trim()).filter(Boolean);
-   for(const name of taxa){if(/\s/.test(name)&&!/^['"]/.test(name))continue;
-    const cleaned=name.replace(/^['"]|['"]$/g,'');if(Object.hasOwn(assignments,cleaned)&&assignments[cleaned]!==current)throw new Error(t('Duplicate PTP specimen: {name}',{name:cleaned}));
-    assignments[cleaned]=current;}
+   const v=line.trim();
+   const match=v.match(/^Species\s+(\d+)(?:\s*\(\s*support\s*=\s*([0-9]+(?:\.[0-9]+)?)\s*\))?\s*:?\s*$/i);
+   if(match){closeGroup();current='Species '+match[1];groups++;membersInGroup=0;continue;}
+   if(!v)continue;
+   if(v.startsWith('#')){
+    // Headers before the species sections are metadata; a later partition section is not concatenated.
+    if(groups&&/partition/i.test(v))break;
+    continue;
+   }
+   if(!current||/^(Command:|Number of|Null-model|Best score)/i.test(v))continue;
+   // Real bPTP web-server exports use a comma-delimited line; mPTP uses one tip per line.
+   const taxa=v.split(/\s*,\s*/).map(x=>x.trim().replace(/^['"]|['"]$/g,'')).filter(Boolean);
+   for(const name of taxa){
+    if(/\s/.test(name))throw new Error(t('Invalid PTP specimen name: {name}',{name}));
+    if(Object.hasOwn(assignments,name))throw new Error(t('Duplicate PTP specimen: {name}',{name}));
+    assignments[name]=current;membersInGroup++;
+   }
   }
+  closeGroup();
   if(!groups||!Object.keys(assignments).length)throw new Error(t('No species partition found'));
-  return named(forced==='mptp'||/mptp/i.test(file)||/Number of delimited species\s*:/i.test(raw)?'mPTP':'bPTP',assignments);
+  const mptp=forced==='mptp'||/mptp/i.test(file)||/Number of delimited species\s*:/i.test(raw);
+  if(mptp)return [{name:'mPTP',assignments,sourceFormat:'mptp'}];
+  const ml=/PTPMLPartition/i.test(file)||/max\s+likilh?ood\s+partition/i.test(raw)||/max\s+likelihood\s+partition/i.test(raw);
+  const high=/PTPhSupportPartition/i.test(file)||/most supported partition/i.test(raw);
+  return [{name:ml?'bPTP ML':high?'bPTP highest support':'bPTP',assignments,
+           sourceFormat:ml?'bptp-ml':high?'bptp-high':'bptp'}];
  }
  const delimiter=(raw.split(/\r?\n/,1)[0].includes('\t')?'\t':',');
  const rows=csvCells(raw,delimiter);
@@ -2845,7 +2883,17 @@ function matchDelimitation(tree,raw){
   if(target&&byNodeId.has(target)){possibilities=[byNodeId.get(target)];mode='manual';}
   else if(target&&exact.has(target)){possibilities=exact.get(target);mode='manual';}
   else if(exact.has(name)){possibilities=exact.get(name);mode='exact';}
-  else{possibilities=normalized.get(normalizeTaxon(name))||[];mode='normalized';}
+  else{
+   possibilities=normalized.get(normalizeTaxon(name))||[];mode='normalized';
+   // The PTP web server replaces the period in accession versions, e.g.
+   // OM089662.1 -> OM089662_1. This alias is narrowly scoped to direct PTP
+   // imports; no fuzzy or general numeric-suffix matching is performed.
+   if(!possibilities.length&&state.methods.some(m=>Object.hasOwn(m.assignments,name)&&
+      ['bptp-ml','bptp-high','bptp'].includes(m.sourceFormat))){
+    const versioned=name.match(/^([A-Za-z]{1,4}\d{4,10})_(\d+)$/);
+    if(versioned){possibilities=exact.get(versioned[1]+'.'+versioned[2])||[];mode='normalized';}
+   }
+  }
   if(possibilities.length===1){pairs.set(name,possibilities[0].id);if(mode==='exact')exactCount++;else if(mode==='normalized')normalizedCount++;else manualCount++;}
   else unmatched.push(name);
  }
@@ -3178,21 +3226,35 @@ $('delimMapBtn').onclick=()=>{
  mutate(()=>{delimitation.manualMap[source]=target;},{fit:true,message:t('말단 이름을 연결했습니다.')});
 };
 $('delimFileInput').addEventListener('change',async e=>{
- const files=[...e.target.files];e.target.value='';if(!files.length)return;
+ // Import ML first when the user selects both bPTP web-server partitions.
+ const rank=name=>/PTPMLPartition/i.test(name)?0:/PTPhSupportPartition/i.test(name)?1:2;
+ const files=[...e.target.files].sort((a,b)=>rank(a.name)-rank(b.name));
+ e.target.value='';if(!files.length)return;
  $('delimImportError').hidden=true;
  try{
-  const added=[];for(const file of files){
+  const added=[],skipped=[];
+  for(const file of files){
    if(file.size>8*1024*1024)throw new Error(t('8 MB 이하 파일을 사용하세요.'));
+   // The PTPPartitonSummary.txt file contains mutually overlapping candidate
+   // groups, not a single species partition; never convert it into a column.
+   if(/PTPPartit(?:on|ion)Summary/i.test(file.name)){
+    skipped.push(file.name);continue;
+   }
    const parsed=parseDelimitationTable(await file.text(),$('delimFormat').value,file.name);
    for(const m of parsed){
     let name=m.name,serial=2;
     while([...delimitation.methods,...added].some(x=>x.name===name)){name=m.name+' ('+serial+++')';}
-    added.push({id:'delim-'+(delimitation.methods.length+added.length+1),name,assignments:m.assignments});
+    added.push({id:'delim-'+(delimitation.methods.length+added.length+1),name,
+      assignments:m.assignments,...(m.sourceFormat?{sourceFormat:m.sourceFormat}:{})});
    }
   }
   if(delimitation.methods.length+added.length>24)throw new Error(t('종 구분 방법은 최대 24개까지 지원합니다.'));
-  if(!added.length)throw new Error(t('종 구분 자료를 찾지 못했습니다.'));
+  if(!added.length)throw new Error(skipped.length?t('PTP summary contains overlapping candidate groups; import PTPMLPartition or PTPhSupportPartition instead'):t('종 구분 자료를 찾지 못했습니다.'));
   mutate(()=>delimitation.methods.push(...added),{fit:true,message:t('{count}개 방법을 추가했습니다.',{count:added.length})});
+  if(skipped.length){
+   $('delimImportError').textContent=t('PTP summary was skipped (not an independent partition): {files}',{files:skipped.join(', ')});
+   $('delimImportError').hidden=false;
+  }
  }catch(error){$('delimImportError').textContent=error.message;$('delimImportError').hidden=false;}
 });
 for(const [id,key,kind] of [
