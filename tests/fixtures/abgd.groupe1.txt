@@ -1,0 +1,2 @@
+Group[ 1 ] n: 2 ;id: A1 A2
+Group[ 2 ] n: 1 ;id: B1
