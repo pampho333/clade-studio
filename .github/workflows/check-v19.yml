@@ -1,0 +1,41 @@
+name: Clade Studio v1.9 checks and offline build
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/check-v19.yml'
+      - 'examples/**'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  check-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check
+        run: npm run check
+      - name: Tests
+        run: npm test
+      - name: Benchmark synthetic 10k tips
+        run: node tests/benchmark-delimitation-v19.mjs | tee benchmark-v19.txt
+      - name: Rebuild offline single HTML with Python stdlib
+        run: python3 build-offline.py
+      - name: Commit generated offline HTML
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html Clade_Studio_Offline_v1.9.html Clade_Studio_Offline_v1.9_EN.html Clade_Studio_Offline_v1.9_TH.html
+          if ! git diff --cached --quiet; then
+            git commit -m "build(v1.9): regenerate offline HTML from src"
+            git push
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clade-studio-v19-benchmark
+          path: benchmark-v19.txt
