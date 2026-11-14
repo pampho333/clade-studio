@@ -61,6 +61,30 @@ B1	ABGD	B
 
 **샘플:** [가상 트리](examples/demo-species.nwk) · [4개 방법 결과](examples/demo-delimitation.csv) · [예제 종 구분 그림](examples/demo-species.svg)
 
+
+### bPTP 웹 서버 출력 파일 (v1.9 보완)
+
+2026-11-15에 확인한 웹 서버 출력 구조를 기준으로 **두 분할 결과를 별도 방법으로 구분합니다.** 아래 예시의 말단 이름은 모두 가상입니다.
+
+- `output.PTPMLPartition.txt` → **bPTP ML** 열(기본 권장)
+- `output.PTPhSupportPartition.txt` → **bPTP highest support** 열(별도 후보 분할)
+- `output.PTPPartitonSummary.txt` → **종 구분 열로 가져오지 않음**. MCMC에서 관찰된 서로 겹치는 후보 그룹과 지지도를 포함한 참고용 요약이며, 하나의 partition이 아닙니다. 파일 3개를 동시에 선택해도 두 partition은 불러오고 summary는 안내 후 건너뜁니다.
+
+```text
+# Max likilhood partition
+Species 1 (support = 0.898)
+     taxon_01,taxon_02,taxon_03
+
+Species 2 (support = 1.000)
+     taxon_04
+```
+
+상단의 `support = ...`는 그룹 자체의 지지도이며, 그룹 구성은 그 아래 쉼표로 구분된 말단 이름으로 결정합니다. **기본 권장 결과는 ML 분할**입니다. 같은 트리에서도 두 분할의 그룹 수와 구성은 다를 수 있습니다. bPTP 웹 서버가 액세션 버전의 점을 밑줄로 바꿨다면(예: `OM089662.1` → `OM089662_1`) **직접 불러온 PTP 결과에 한해** 정확 일치 후 이 한정된 형태를 자동 연결합니다. 후보가 여러 개이면 자동 연결하지 않고 수동 선택하도록 남깁니다. 다른 방법의 일반 입력 표에는 점·밑줄 변환을 적용하지 않습니다.
+
+**GMYC 웹 서버는 그룹별 말단 구성 파일을 제공하지 않고 클러스터 개수·통계량·그래프만 반환하는 경우가 있습니다.** 이 요약 텍스트는 종 구분 열로 해석하지 않습니다. 구성원 목록은 R `splits`의 `spec.list` 등을 이용해 표로 내보내 주십시오.
+
+테스트용 가상 출력: [ML](tests/fixtures/bptp_output.PTPMLPartition.txt), [highest support](tests/fixtures/bptp_output.PTPhSupportPartition.txt), [summary](tests/fixtures/bptp_output.PTPPartitonSummary.txt).
+
 ### 성능 재현
 
 ```bash
