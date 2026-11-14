@@ -2207,5 +2207,6 @@ export const CATALOG = Object.freeze({
     "ko": "Adjusted Rand index",
     "en": "Adjusted Rand index",
     "th": "ดัชนีแรนด์ปรับแก้"
-  }
+  },
+  "종 구분 예제 열기": {"ko":"종 구분 예제 열기","en":"Open species delimitation example","th":"เปิดตัวอย่างการจำแนกขอบเขตชนิด"}
 });
