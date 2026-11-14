@@ -275,13 +275,14 @@ export function parseDelimitationTable(text,format='auto',filename=''){
 }
 export function matchDelimitation(tree,raw){
  const state=normalizeDelimitation(raw),leaves=[];walk(tree,n=>{if(!n.children.length)leaves.push(n);});
- const exact=new Map(),normalized=new Map();
+ const exact=new Map(),normalized=new Map(),byNodeId=new Map(leaves.map(n=>[n.id,n]));
  for(const n of leaves){const a=exact.get(n.name)||[];a.push(n);exact.set(n.name,a);const key=normalizeTaxon(n.name),b=normalized.get(key)||[];b.push(n);normalized.set(key,b);}
  const incoming=new Set(state.methods.flatMap(m=>Object.keys(m.assignments))),pairs=new Map(),unmatched=[];
  let exactCount=0,normalizedCount=0,manualCount=0;
  for(const name of incoming){
   let possibilities=[],mode='';const target=state.manualMap[name];
-  if(target&&exact.has(target)){possibilities=exact.get(target);mode='manual';}
+  if(target&&byNodeId.has(target)){possibilities=[byNodeId.get(target)];mode='manual';}
+  else if(target&&exact.has(target)){possibilities=exact.get(target);mode='manual';}
   else if(exact.has(name)){possibilities=exact.get(name);mode='exact';}
   else{possibilities=normalized.get(normalizeTaxon(name))||[];mode='normalized';}
   if(possibilities.length===1){pairs.set(name,possibilities[0].id);if(mode==='exact')exactCount++;else if(mode==='normalized')normalizedCount++;else manualCount++;}
