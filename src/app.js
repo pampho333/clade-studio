@@ -250,6 +250,7 @@ $('delimBtn').onclick=()=>{openDialog('delimDialog');renderDelimPanel();};
 $('delimClose').onclick=()=>$('delimDialog').close();
 $('delimChooseFile').onclick=()=>$('delimFileInput').click();
 $('delimLoadExample').onclick=importDelimExample;
+$('delimSampleBtn').onclick=()=>{if(!sample&&!confirm(t('현재 트리를 예제 트리로 교체하시겠습니까? 프로젝트를 저장하지 않은 경우 현재 작업은 실행 취소로 복원할 수 있습니다.')))return;importDelimExample();};
 $('delimExportCsv').onclick=delimCsvSummary;
 $('delimMapBtn').onclick=()=>{
  const source=$('delimMapSource').value,target=$('delimMapTarget').value;
