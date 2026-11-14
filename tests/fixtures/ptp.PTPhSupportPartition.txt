@@ -1,4 +1,4 @@
-# Max likelihood partition
+# Most supported partition found by simple heuristic search
 Species 1 (support = 1.000)
 A1, A2
 Species 2 (support = 0.950)
