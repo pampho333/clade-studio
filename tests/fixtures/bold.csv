@@ -1,0 +1,4 @@
+processid,sampleid,bin_uri
+A1,S1,BOLD:AAA0001
+A2,S2,BOLD:AAA0001
+B1,S3,BOLD:AAA0002
