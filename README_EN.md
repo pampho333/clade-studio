@@ -53,6 +53,32 @@ The summary reports the number of groups, singletons, non-monophyletic groups an
 
 Examples: [synthetic tree](examples/demo-species.nwk), [four-method table](examples/demo-delimitation.csv), [example SVG](examples/demo-species.svg).
 
+
+### Verified bPTP web-server files (v1.9 follow-up)
+
+The web server returns two different partitions. Clade Studio imports these **as separately named methods**:
+
+- `output.PTPMLPartition.txt` → **bPTP ML**, the recommended default.
+- `output.PTPhSupportPartition.txt` → **bPTP highest support**, an alternative heuristic partition.
+- `output.PTPPartitonSummary.txt` → **not a partition**; it lists possibly overlapping MCMC candidate groups and support values. When selected alongside partition files, it is skipped with a warning. The misspelling `Partiton` originates from the server.
+
+Example (only synthetic taxon labels):
+
+```text
+# Max likilhood partition
+Species 1 (support = 0.898)
+     taxon_01,taxon_02,taxon_03
+
+Species 2 (support = 1.000)
+     taxon_04
+```
+
+Species membership is extracted from the comma-separated tip lists. For **direct bPTP imports only**, a terminal accession version suffix replaced by the server is recognized in the narrowly scoped form `OM089662_1` ↔ `OM089662.1`, after exact matching. Ambiguous names remain unmatched for manual mapping. Generic wide/long tables are not subject to this exception.
+
+The **GMYC web result summary** contains model statistics and cluster counts, not tip memberships; it is rejected as a delimitation table. Export an actual membership table from R `splits` (`spec.list`) instead.
+
+Synthetic fixtures: [ML](tests/fixtures/bptp_output.PTPMLPartition.txt) · [highest support](tests/fixtures/bptp_output.PTPhSupportPartition.txt) · [summary](tests/fixtures/bptp_output.PTPPartitonSummary.txt).
+
 **Benchmark**: `node tests/benchmark-delimitation-v19.mjs` (10,000 synthetic tips × five methods). Development commands are `npm run check`, `npm test`, and `python3 build-offline.py`.
 
 ## Main features
