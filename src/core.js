@@ -185,7 +185,8 @@ export function normalizeDelimitation(input={}){
   const assignments={};const source=m.assignments&&typeof m.assignments==='object'&&!Array.isArray(m.assignments)?m.assignments:{};
   for(const [name,group] of Object.entries(source).slice(0,30000))if(delimName(name)&&delimGroup(group))assignments[delimName(name).slice(0,4000)]=delimGroup(group);
   return {id:typeof m.id==='string'&&/^[\w-]{1,100}$/.test(m.id)?m.id:'method-'+i,
-   name:delimName(m.name).slice(0,120)||'Method '+(i+1),assignments};
+   name:delimName(m.name).slice(0,120)||'Method '+(i+1),assignments,
+   ...(['bptp-ml','bptp-high','bptp','mptp'].includes(m.sourceFormat)?{sourceFormat:m.sourceFormat}:{})};
  });
  const manualMap={};if(raw.manualMap&&typeof raw.manualMap==='object')for(const [source,target] of Object.entries(raw.manualMap)){
   if(typeof target==='string'&&source.length<4001&&target.length<4001&&source.trim()&&target.trim())manualMap[source]=target;
@@ -217,21 +218,51 @@ export function parseDelimitationTable(text,format='auto',filename=''){
   }
   if(!groups)throw new Error(t('No ABGD groups found'));return named('ABGD',assignments);
  }
+ // A PTP summary lists overlapping candidate groups, NOT one valid partition.
+ // The web-server filename misspells "Partition" as "Partiton".
+ if(/PTPPartit(?:on|ion)Summary/i.test(file) ||
+    (/^\s*[\w.-]+(?:\s*,\s*[\w.-]+)*\s*:\s*(?:0?\.\d+|1(?:\.0+)?)\s*$/m.test(raw) &&
+     !/^\s*Species\s+\d+/mi.test(raw) && /(?:PTP|species)/i.test(file))){
+  throw new Error(t('PTP summary contains overlapping candidate groups; import PTPMLPartition or PTPhSupportPartition instead'));
+ }
+ // The species.h-its.org GMYC web page provides cluster counts, not tip membership.
+ if(/^\s*#\s*Result of GMYC species delimitation/mi.test(raw) ||
+    (/^\s*number of ML clusters\s*:/mi.test(raw) && /threshold time\s*:/i.test(raw))){
+  throw new Error(t('GMYC web summary has no tip memberships; export a spec.list membership table'));
+ }
  if(forced==='bptp'||forced==='mptp'||(forced==='auto'&&/(?:PTPMLPartition|PTPhSupportPartition|mptp)/i.test(file))||
-  (forced==='auto'&&/^\s*Species\s+\d+\s*(?:\(\s*support\s*=|:)/mi.test(raw))){
-  const assignments={};let current=null,groups=0,seenSection=false;
+   (forced==='auto'&&/^\s*Species\s+\d+\s*(?:\(\s*support\s*=|:)/mi.test(raw))){
+  const assignments={};let current=null,groups=0,membersInGroup=0;
+  const closeGroup=()=>{
+   if(current&&membersInGroup===0)throw new Error(t('PTP group {group} has no members',{group:current}));
+  };
   for(const line of raw.split(/\r?\n/)){
-   const v=line.trim();const sp=v.match(/^Species\s+(\d+)\s*(?:\([^)]*\))?\s*:?\s*$/i);
-   if(sp){current='Species '+sp[1];groups++;continue;}
-   if(v.startsWith('#')){if(groups&&/partition/i.test(v)){break;}if(groups&&!seenSection){break;}continue;}
-   if(!current||!v||/^(Command:|Number of|Null-model|Best score|Number of delimited)/i.test(v))continue;
-   const taxa=v.split(/\s*,\s*/).map(x=>x.trim()).filter(Boolean);
-   for(const name of taxa){if(/\s/.test(name)&&!/^['"]/.test(name))continue;
-    const cleaned=name.replace(/^['"]|['"]$/g,'');if(Object.hasOwn(assignments,cleaned)&&assignments[cleaned]!==current)throw new Error(t('Duplicate PTP specimen: {name}',{name:cleaned}));
-    assignments[cleaned]=current;}
+   const v=line.trim();
+   const match=v.match(/^Species\s+(\d+)(?:\s*\(\s*support\s*=\s*([0-9]+(?:\.[0-9]+)?)\s*\))?\s*:?\s*$/i);
+   if(match){closeGroup();current='Species '+match[1];groups++;membersInGroup=0;continue;}
+   if(!v)continue;
+   if(v.startsWith('#')){
+    // Headers before the species sections are metadata; a later partition section is not concatenated.
+    if(groups&&/partition/i.test(v))break;
+    continue;
+   }
+   if(!current||/^(Command:|Number of|Null-model|Best score)/i.test(v))continue;
+   // Real bPTP web-server exports use a comma-delimited line; mPTP uses one tip per line.
+   const taxa=v.split(/\s*,\s*/).map(x=>x.trim().replace(/^['"]|['"]$/g,'')).filter(Boolean);
+   for(const name of taxa){
+    if(/\s/.test(name))throw new Error(t('Invalid PTP specimen name: {name}',{name}));
+    if(Object.hasOwn(assignments,name))throw new Error(t('Duplicate PTP specimen: {name}',{name}));
+    assignments[name]=current;membersInGroup++;
+   }
   }
+  closeGroup();
   if(!groups||!Object.keys(assignments).length)throw new Error(t('No species partition found'));
-  return named(forced==='mptp'||/mptp/i.test(file)||/Number of delimited species\s*:/i.test(raw)?'mPTP':'bPTP',assignments);
+  const mptp=forced==='mptp'||/mptp/i.test(file)||/Number of delimited species\s*:/i.test(raw);
+  if(mptp)return [{name:'mPTP',assignments,sourceFormat:'mptp'}];
+  const ml=/PTPMLPartition/i.test(file)||/max\s+likilh?ood\s+partition/i.test(raw)||/max\s+likelihood\s+partition/i.test(raw);
+  const high=/PTPhSupportPartition/i.test(file)||/most supported partition/i.test(raw);
+  return [{name:ml?'bPTP ML':high?'bPTP highest support':'bPTP',assignments,
+           sourceFormat:ml?'bptp-ml':high?'bptp-high':'bptp'}];
  }
  const delimiter=(raw.split(/\r?\n/,1)[0].includes('\t')?'\t':',');
  const rows=csvCells(raw,delimiter);
@@ -284,7 +315,17 @@ export function matchDelimitation(tree,raw){
   if(target&&byNodeId.has(target)){possibilities=[byNodeId.get(target)];mode='manual';}
   else if(target&&exact.has(target)){possibilities=exact.get(target);mode='manual';}
   else if(exact.has(name)){possibilities=exact.get(name);mode='exact';}
-  else{possibilities=normalized.get(normalizeTaxon(name))||[];mode='normalized';}
+  else{
+   possibilities=normalized.get(normalizeTaxon(name))||[];mode='normalized';
+   // The PTP web server replaces the period in accession versions, e.g.
+   // OM089662.1 -> OM089662_1. This alias is narrowly scoped to direct PTP
+   // imports; no fuzzy or general numeric-suffix matching is performed.
+   if(!possibilities.length&&state.methods.some(m=>Object.hasOwn(m.assignments,name)&&
+      ['bptp-ml','bptp-high','bptp'].includes(m.sourceFormat))){
+    const versioned=name.match(/^([A-Za-z]{1,4}\d{4,10})_(\d+)$/);
+    if(versioned){possibilities=exact.get(versioned[1]+'.'+versioned[2])||[];mode='normalized';}
+   }
+  }
   if(possibilities.length===1){pairs.set(name,possibilities[0].id);if(mode==='exact')exactCount++;else if(mode==='normalized')normalizedCount++;else manualCount++;}
   else unmatched.push(name);
  }
