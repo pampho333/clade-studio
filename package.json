@@ -1,8 +1,8 @@
 {
   "name": "clade-studio",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "private": true,
-  "description": "Offline browser-based phylogenetic tree editor with editable collapsed clades, rerooting, and taxon annotations.",
+  "description": "Offline phylogenetic tree editor with rerooting, clade annotations, and species-delimitation comparison columns.",
   "type": "module",
   "engines": {
     "node": ">=20"
