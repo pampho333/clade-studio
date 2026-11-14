@@ -264,21 +264,35 @@ $('delimMapBtn').onclick=()=>{
  mutate(()=>{delimitation.manualMap[source]=target;},{fit:true,message:t('말단 이름을 연결했습니다.')});
 };
 $('delimFileInput').addEventListener('change',async e=>{
- const files=[...e.target.files];e.target.value='';if(!files.length)return;
+ // Import ML first when the user selects both bPTP web-server partitions.
+ const rank=name=>/PTPMLPartition/i.test(name)?0:/PTPhSupportPartition/i.test(name)?1:2;
+ const files=[...e.target.files].sort((a,b)=>rank(a.name)-rank(b.name));
+ e.target.value='';if(!files.length)return;
  $('delimImportError').hidden=true;
  try{
-  const added=[];for(const file of files){
+  const added=[],skipped=[];
+  for(const file of files){
    if(file.size>8*1024*1024)throw new Error(t('8 MB 이하 파일을 사용하세요.'));
+   // The PTPPartitonSummary.txt file contains mutually overlapping candidate
+   // groups, not a single species partition; never convert it into a column.
+   if(/PTPPartit(?:on|ion)Summary/i.test(file.name)){
+    skipped.push(file.name);continue;
+   }
    const parsed=parseDelimitationTable(await file.text(),$('delimFormat').value,file.name);
    for(const m of parsed){
     let name=m.name,serial=2;
     while([...delimitation.methods,...added].some(x=>x.name===name)){name=m.name+' ('+serial+++')';}
-    added.push({id:'delim-'+(delimitation.methods.length+added.length+1),name,assignments:m.assignments});
+    added.push({id:'delim-'+(delimitation.methods.length+added.length+1),name,
+      assignments:m.assignments,...(m.sourceFormat?{sourceFormat:m.sourceFormat}:{})});
    }
   }
   if(delimitation.methods.length+added.length>24)throw new Error(t('종 구분 방법은 최대 24개까지 지원합니다.'));
-  if(!added.length)throw new Error(t('종 구분 자료를 찾지 못했습니다.'));
+  if(!added.length)throw new Error(skipped.length?t('PTP summary contains overlapping candidate groups; import PTPMLPartition or PTPhSupportPartition instead'):t('종 구분 자료를 찾지 못했습니다.'));
   mutate(()=>delimitation.methods.push(...added),{fit:true,message:t('{count}개 방법을 추가했습니다.',{count:added.length})});
+  if(skipped.length){
+   $('delimImportError').textContent=t('PTP summary was skipped (not an independent partition): {files}',{files:skipped.join(', ')});
+   $('delimImportError').hidden=false;
+  }
  }catch(error){$('delimImportError').textContent=error.message;$('delimImportError').hidden=false;}
 });
 for(const [id,key,kind] of [
