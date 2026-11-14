@@ -1,0 +1,57 @@
+name: Publish Clade Studio v1.9
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-v19.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm source-generated offline editions
+        run: |
+          test -s Clade_Studio_Offline_v1.9.html
+          test -s Clade_Studio_Offline_v1.9_EN.html
+          test -s Clade_Studio_Offline_v1.9_TH.html
+          test -s examples/demo-species.svg
+          test -s examples/demo-delimitation.csv
+          test -s examples/demo-species.nwk
+      - name: Assemble offline distribution ZIP
+        run: |
+          zip -9 Clade_Studio_v1.9.zip \
+            Clade_Studio_Offline_v1.9.html \
+            Clade_Studio_Offline_v1.9_EN.html \
+            Clade_Studio_Offline_v1.9_TH.html \
+            examples/demo-species.svg \
+            examples/demo-delimitation.csv \
+            examples/demo-species.nwk
+      - name: Publish release
+        env:
+          GH_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view v1.9 >/dev/null 2>&1; then
+            gh release upload v1.9 Clade_Studio_Offline_v1.9.html \
+              Clade_Studio_Offline_v1.9_EN.html \
+              Clade_Studio_Offline_v1.9_TH.html \
+              Clade_Studio_v1.9.zip \
+              examples/demo-species.svg \
+              examples/demo-delimitation.csv \
+              examples/demo-species.nwk --clobber
+          else
+            gh release create v1.9 \
+              Clade_Studio_Offline_v1.9.html \
+              Clade_Studio_Offline_v1.9_EN.html \
+              Clade_Studio_Offline_v1.9_TH.html \
+              Clade_Studio_v1.9.zip \
+              examples/demo-species.svg \
+              examples/demo-delimitation.csv \
+              examples/demo-species.nwk \
+              --target "$GITHUB_SHA" \
+              --title "Clade Studio v1.9 — Species delimitation comparison" \
+              --notes "New: species delimitation comparison columns for ASAP, ABGD, bPTP/mPTP, GMYC and BOLD BIN; wide/long tables, safe tip mapping, mixed and non-monophyletic group indicators, consensus, pairwise Jaccard/ARI, tri-lingual UI, schema v2 with v1.8 compatibility, and SVG/PNG export. All included examples are synthetic. The three HTML editions are fully offline and need no external packages." \
+              --latest
+          fi
