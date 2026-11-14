@@ -1,0 +1,11 @@
+ taxon_07: 1.000
+ taxon_01, taxon_02, taxon_03, taxon_04, taxon_05, taxon_06: 0.898
+ taxon_08, taxon_09: 0.825
+ taxon_14: 0.781
+ taxon_13: 0.613
+ taxon_12: 0.428
+ taxon_10, taxon_11: 0.222
+ taxon_13, taxon_14, taxon_10, taxon_11, taxon_12: 0.219
+ taxon_08: 0.175
+ taxon_09: 0.175
+ taxon_13, taxon_10, taxon_11, taxon_12: 0.169
