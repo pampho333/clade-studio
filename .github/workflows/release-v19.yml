@@ -14,6 +14,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Confirm source-generated offline editions
         run: |
+          npm run check
+          npm test
+          python3 build-offline.py
+          git diff --exit-code -- index.html Clade_Studio_Offline_v1.9.html Clade_Studio_Offline_v1.9_EN.html Clade_Studio_Offline_v1.9_TH.html
+      - name: Check packaged files
+        run: |
           test -s Clade_Studio_Offline_v1.9.html
           test -s Clade_Studio_Offline_v1.9_EN.html
           test -s Clade_Studio_Offline_v1.9_TH.html
@@ -34,6 +40,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if gh release view v1.9 >/dev/null 2>&1; then
+            gh release edit v1.9 --notes "v1.9 species delimitation comparison with verified bPTP web-server output support. PTPMLPartition -> bPTP ML (preferred default); PTPhSupportPartition -> bPTP highest support; PTPPartitonSummary is an overlapping-candidate summary and is skipped. Direct bPTP imports can match accession version OM089662_1 to OM089662.1 only when unambiguous. GMYC web summary alone has no tip-level membership information. Fully offline HTML in Korean, English, and Thai. All included examples are synthetic."
             gh release upload v1.9 Clade_Studio_Offline_v1.9.html \
               Clade_Studio_Offline_v1.9_EN.html \
               Clade_Studio_Offline_v1.9_TH.html \
