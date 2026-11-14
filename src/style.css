@@ -97,3 +97,25 @@ html[lang=th] .tool-button,html[lang=th] .segmented button{line-height:1.6}
 @media(max-width:1400px){.header-divider{display:none}.project-heading{min-width:100px}.language-control>span{display:none}}
 @media(max-width:900px){.project-heading{display:none}}
 @media(max-width:700px){.language-control select{width:86px;font-size:14px;height:40px}.brand-tag{display:none}.brand{font-size:21px;gap:6px}.brand-mark{width:38px;height:38px}.canvas-toolbar{flex-wrap:nowrap;overflow-x:auto}.app-header{gap:5px}.header-actions{gap:2px}}
+
+
+/* v1.9 — species delimitation comparison panel; fully offline, responsive. */
+.delim-dialog { width:min(980px,96vw); max-height:min(92vh,920px); overflow:auto; color:#252525; }
+.delim-dialog .delim-import { display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:16px 0; }
+.delim-dialog .delim-grid { display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:22px;margin:12px 0 18px; }
+.delim-dialog .delim-grid>section { min-width:0;display:flex;flex-direction:column;gap:8px; }
+.delim-dialog h3 { margin:14px 0 6px; font-size:15px; }
+.delim-dialog select,.delim-dialog input[type=number],.delim-dialog input[type=color] { max-width:100%; padding:7px; min-height:32px; border:1px solid #aaa; border-radius:4px; background:#fff; color:#262626; }
+.delim-dialog input[type=color] {width:90px;padding:2px;}
+.delim-dialog select { width:100%; }
+.delim-scroller {min-height:22px;max-height:138px;overflow-y:auto;border:1px solid #e0e0e0;border-radius:4px;padding:6px;background:#fbfbfb;overflow-wrap:anywhere;font-size:12px; }
+.delim-method {display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #ddd;padding:5px 2px;}
+.delim-method button {border:1px solid #bbb;background:#fff;color:#333;padding:3px 8px;border-radius:3px;}
+.delim-warning {color:#964624;}
+.delim-summary-scroll{max-height:210px;overflow:auto;}
+.delim-summary{border-collapse:collapse;width:100%;min-width:600px;font-size:12px;}
+.delim-summary th,.delim-summary td{border-bottom:1px solid #ddd;text-align:left;padding:6px 9px;vertical-align:top;overflow-wrap:anywhere;}
+.delim-summary th{position:sticky;top:0;background:#f2f2f2;color:#222;}
+.delim-dialog .switch-row{margin:3px 0;padding:5px 0;}
+.delim-dialog .dialog-footer{position:sticky;bottom:0;background:#fff;padding-top:12px;}
+@media(max-width:760px){.delim-dialog .delim-grid{grid-template-columns:1fr;}.delim-dialog{width:96vw;}}
