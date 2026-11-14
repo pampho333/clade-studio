@@ -1,6 +1,6 @@
 # Clade Studio
 
-**브라우저에서 실행하는 오프라인 계통수 편집기 · 수정 버전 1.8**
+**브라우저에서 실행하는 오프라인 계통수 편집기 · 수정 버전 1.9**
 
 [English](README_EN.md) · [ภาษาไทย](README_TH.md)
 
@@ -11,12 +11,66 @@ An offline, browser-based phylogenetic tree editor with independently resizable 
 ## 실행하기
 
 1. 이 저장소를 ZIP으로 내려받고 압축을 풉니다.
-2. [한국어 시작 파일](Clade_Studio_Offline_v1.8.html), [영어 시작 파일](Clade_Studio_Offline_v1.8_EN.html), [태국어 시작 파일](Clade_Studio_Offline_v1.8_TH.html) 중 하나를 Chrome이나 Edge에서 엽니다. [index.html](index.html)은 한국어로 시작합니다.
+2. [한국어 시작 파일](Clade_Studio_Offline_v1.9.html), [영어 시작 파일](Clade_Studio_Offline_v1.9_EN.html), [태국어 시작 파일](Clade_Studio_Offline_v1.9_TH.html) 중 하나를 Chrome이나 Edge에서 엽니다. [index.html](index.html)은 한국어로 시작합니다.
 3. **트리 열기**를 누르거나 트리 파일을 화면에 끌어 놓습니다.
 
 오른쪽 위 **언어 / Language / ภาษา** 메뉴에서 한국어·영어·태국어를 바로 전환할 수 있습니다. 세 파일의 기능은 같으며 시작 언어만 다릅니다. 언어 선택은 해당 시작 파일의 브라우저 설정으로 저장되며, 트리·학명·직접 입력한 라벨·분류군 이름과 프로젝트 파일을 바꾸지 않습니다. 브라우저 저장을 사용할 수 없는 경우 파일의 기본 언어로 시작합니다.
 
 일반 사용에는 Node.js, Python, 인터넷 연결이 필요하지 않습니다. 바로 확인하려면 앱의 예제 트리 또는 [examples/demo.nwk](examples/demo.nwk)를 사용하십시오. 예제는 기능 설명을 위한 가상 데이터입니다.
+
+
+## 1.9 종 구분 결과 비교 열
+
+상단 **종 구분** 버튼을 누르고 CSV/TSV 표 또는 프로그램별 결과 TXT를 가져오면, 직각 계통수 오른쪽에 방법별 종 구분 막대 열이 생깁니다. 여러 파일을 한 번에 선택하거나 차례로 추가할 수 있습니다. **왼쪽 예제 → 종 구분 예제 열기**로 가상 ASAP·ABGD·bPTP·GMYC 4개 방법을 즉시 시연할 수 있습니다. 로컬 입력은 외부 서버로 전송되지 않습니다.
+
+**공통 넓은 표 (CSV/TSV)** — 첫 열: 원본 말단명, 나머지 열: 방법별 그룹 이름.
+
+```csv
+taxon,ASAP,ABGD,bPTP,GMYC
+A1,A,A,1,A
+A2,A,A,1,A
+B1,B,B,2,B
+```
+
+**공통 긴 표 (CSV/TSV)** — 말단명, 방법, 그룹(각각 한 열).
+
+```tsv
+taxon	method	group
+A1	ASAP	A
+A2	ASAP	A
+B1	ABGD	B
+```
+
+**검증된 도구 출력 중 지원하는 형태** (공개된 실제 포맷을 참고하여 파서를 작성했으며, 저장소의 파일은 전부 가상 데이터입니다).
+
+| 방법 | 지원 형식 | 가상 파일 |
+| --- | --- | --- |
+| ASAP | `Partition_N.csv`: `tip , group_number` | [asap.Partition_1.csv](tests/fixtures/asap.Partition_1.csv) |
+| ABGD | `groupeN.txt`: `Group[ 1 ] n: 2 ;id: A1 A2` | [abgd.groupe1.txt](tests/fixtures/abgd.groupe1.txt) |
+| bPTP / mPTP | `Species N:` 또는 `Species N (support = …)` 이후 말단 목록 | [bPTP](tests/fixtures/ptp.PTPhSupportPartition.txt) · [mPTP](tests/fixtures/mptp.webserver.txt) |
+| GMYC | `GMYC_spec,sample_name` 열이 포함된 표 | [gmyc.csv](tests/fixtures/gmyc.csv) |
+| BOLD BIN | `processid`(또는 `sampleid`), `bin_uri` 열을 포함한 CSV | [bold.csv](tests/fixtures/bold.csv) |
+
+자동 인식이 불가능한 경우 **입력 형식**에서 형식을 명시해 주십시오. 지원한다고 적지 않은 각 도구의 다른 출력 변형(SPART, R 객체 자체, Bayesian posterior summary, HTML 리포트 등)은 추측해서 해석하지 않습니다. 해당 출력의 일부와 열 이름이 보이는 실제 출력 예시를 제공해 주시면 별도 검증 후 추가할 수 있습니다.
+
+가져온 뒤 **정확한 말단명 → 공백·밑줄·따옴표 정규화** 순으로 대응합니다. 미일치 파일 이름과 트리 말단은 각각 별도 목록으로 표시하며 **선택한 이름 연결**로 사용자가 직접 짝지을 수 있습니다. 분할 그룹은 현재 트리 순서에 따라 연속 구간만 하나로 합치며, 떨어진 구간은 별도 막대·점선·경고 기호로 표시합니다. 접힌 분기군이 혼합 그룹이면 줄무늬로 나타납니다. 색상·폭·열 간격·헤더 방향·싱글턴 점 표시를 선택할 수 있습니다. 기존 분류군 색 띠·배경과 같이 사용할 수 있습니다.
+
+방법별 그룹·싱글턴 수, 단계통이 아닌 그룹, 방법 쌍의 **coassignment Jaccard**와 **adjusted Rand index**를 표시하고 CSV로 저장합니다. **합의** 열은 모든 방법의 그룹 구성원이 완전히 동일한 집합만 보이며, 방법 불일치 강조도 제공합니다. 원형 보기에서는 열을 숨기고 안내만 합니다.
+
+새 프로젝트 형식은 `.clade.json`의 **스키마 2**로 자료와 설정, 수동 매칭을 저장하며 기존 **스키마 1(1.8)**도 열 수 있습니다. 실행 취소·다시 실행, SVG·PNG 내보내기에 포함되며 Newick 출력은 종 구분 표시 기능으로 바뀌지 않습니다. 분석은 입력된 결과를 **비교·시각화**할 뿐, ASAP·ABGD·bPTP·GMYC 분석 자체를 수행하지 않습니다.
+
+**샘플:** [가상 트리](examples/demo-species.nwk) · [4개 방법 결과](examples/demo-delimitation.csv) · [예제 종 구분 그림](examples/demo-species.svg)
+
+### 성능 재현
+
+```bash
+node tests/benchmark-delimitation-v19.mjs
+npm run check
+npm test
+python3 build-offline.py
+```
+
+10,000개 말단 + 5개 방법의 막대 구간 계산을 별도 측정합니다. 측정 시간은 컴퓨터와 JS 런타임에 따라 달라집니다.
 
 ## 주요 기능
 
@@ -32,6 +86,7 @@ An offline, browser-based phylogenetic tree editor with independently resizable 
 | 라벨 편집 | 화면 표시 이름, 학명 부분만 이탤릭, 직접 선택한 문자열만 이탤릭 |
 | 부트스트랩 | 검은색 표시, 드래그 이동, X·Y 오프셋·정렬 조절 |
 | 분류군 색 띠 | 선택 분기군 또는 라벨 검색으로 대상 지정, 오른쪽 색 띠·분류군 이름 |
+| 종 구분 비교 열 | 방법별 막대·합의·불일치 표시, 그룹 일치도, 프로젝트 저장 및 SVG/PNG 내보내기 |
 | 분류군 배경 | 단색·그라데이션, 색 띠와 독립적인 배경색·진하기·폭·이름 정렬 |
 | 글꼴 | 12개 글꼴 목록, 설치된 글꼴 이름 직접 입력, 미리보기 |
 | 저장·내보내기 | 편집 프로젝트 `.clade.json`, Newick, SVG, PNG, 실행 취소·다시 실행 |
@@ -117,9 +172,9 @@ Windows에서 `python3` 명령이 없으면 `py -3 build-offline.py`를 사용�
 | 경로 | 용도 |
 | --- | --- |
 | `index.html` | 최신 단일 HTML 실행 파일 |
-| `Clade_Studio_Offline_v1.8.html` | 버전이 표시된 한국어 시작 파일 |
-| `Clade_Studio_Offline_v1.8_EN.html` | 영어 시작 파일 |
-| `Clade_Studio_Offline_v1.8_TH.html` | 태국어 시작 파일 |
+| `Clade_Studio_Offline_v1.9.html` | 버전이 표시된 한국어 시작 파일 |
+| `Clade_Studio_Offline_v1.9_EN.html` | 영어 시작 파일 |
+| `Clade_Studio_Offline_v1.9_TH.html` | 태국어 시작 파일 |
 | `src/index.html` | UI 구성과 버전 메타데이터 |
 | `src/i18n.js` | 세 언어 번역, 언어 선택, 사용자 데이터와 분리한 UI 번역 |
 | `src/style.css` | UI 스타일과 오프라인 커서 |
@@ -134,7 +189,7 @@ Windows에서 `python3` 명령이 없으면 `py -3 build-offline.py`를 사용�
 
 ## 지원 범위
 
-- 파일 입력은 최대 8 MB, 트리는 최대 10,000개 노드·깊이 500까지 처리합니다. 큰 트리의 반응 속도는 컴퓨터 환경에 따라 달라집니다.
+- 파일 입력은 최대 8 MB, 트리는 최대 100,000개 노드·깊이 500까지 처리합니다. 큰 트리의 반응 속도는 컴퓨터 환경에 따라 달라집니다.
 - 누락된 가지 길이는 화면에서 0으로 표시합니다. 음수 길이도 화면에서는 0으로 표시하되 원본 값은 보존합니다.
 - 이 앱은 기존 트리를 편집하고 표시합니다. 계통수 추론이나 부트스트랩 재계산을 수행하지 않습니다.
 
