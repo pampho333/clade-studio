@@ -1857,5 +1857,355 @@ export const CATALOG = Object.freeze({
     "ko": "프로젝트 JSON 형식이 올바르지 않습니다.",
     "en": "Invalid project JSON. Check the file format.",
     "th": "รูปแบบ JSON ของโครงการไม่ถูกต้อง โปรดตรวจสอบไฟล์"
+  },
+  "종 구분": {
+    "ko": "종 구분",
+    "en": "Species delimitation",
+    "th": "การจำแนกขอบเขตชนิด"
+  },
+  "종 구분 결과 비교 열": {
+    "ko": "종 구분 결과 비교 열",
+    "en": "Species delimitation columns",
+    "th": "คอลัมน์เปรียบเทียบผลการจำแนกชนิด"
+  },
+  "자료는 브라우저 안에서만 처리됩니다. 파일을 계속 추가하면 방법별 열이 만들어집니다.": {
+    "ko": "자료는 브라우저 안에서만 처리됩니다. 파일을 계속 추가하면 방법별 열이 만들어집니다.",
+    "en": "Data is processed only in this browser. Add files to create one column per method.",
+    "th": "ข้อมูลถูกประมวลผลภายในเบราว์เซอร์เท่านั้น เพิ่มไฟล์เพื่อสร้างคอลัมน์สำหรับแต่ละวิธี"
+  },
+  "입력 형식": {
+    "ko": "입력 형식",
+    "en": "Input format",
+    "th": "รูปแบบข้อมูลนำเข้า"
+  },
+  "자동 감지": {
+    "ko": "자동 감지",
+    "en": "Auto-detect",
+    "th": "ตรวจจับอัตโนมัติ"
+  },
+  "넓은 표 · CSV/TSV": {
+    "ko": "넓은 표 · CSV/TSV",
+    "en": "Wide table · CSV/TSV",
+    "th": "ตารางแบบกว้าง · CSV/TSV"
+  },
+  "긴 표 · CSV/TSV": {
+    "ko": "긴 표 · CSV/TSV",
+    "en": "Long table · CSV/TSV",
+    "th": "ตารางแบบยาว · CSV/TSV"
+  },
+  "파일 추가 (여러 개 가능)": {
+    "ko": "파일 추가 (여러 개 가능)",
+    "en": "Add files (multiple allowed)",
+    "th": "เพิ่มไฟล์ (เลือกได้หลายไฟล์)"
+  },
+  "가상 예제 불러오기": {
+    "ko": "가상 예제 불러오기",
+    "en": "Load synthetic example",
+    "th": "โหลดตัวอย่างจำลอง"
+  },
+  "불러온 방법": {
+    "ko": "불러온 방법",
+    "en": "Imported methods",
+    "th": "วิธีที่นำเข้า"
+  },
+  "이름 맞추기": {
+    "ko": "이름 맞추기",
+    "en": "Match names",
+    "th": "จับคู่ชื่อ"
+  },
+  "정확 일치 → 공백·밑줄·따옴표 정규화 → 직접 선택": {
+    "ko": "정확 일치 → 공백·밑줄·따옴표 정규화 → 직접 선택",
+    "en": "Exact match → whitespace/underscore/quote normalization → manual mapping",
+    "th": "จับคู่ตรงตัว → ปรับช่องว่าง ขีดล่าง และเครื่องหมายอัญประกาศ → จับคู่ด้วยตนเอง"
+  },
+  "파일에만 있는 이름": {
+    "ko": "파일에만 있는 이름",
+    "en": "Names only in the file",
+    "th": "ชื่อที่พบเฉพาะในไฟล์"
+  },
+  "트리의 말단 이름": {
+    "ko": "트리의 말단 이름",
+    "en": "Tree tip name",
+    "th": "ชื่อปลายกิ่งในทรี"
+  },
+  "선택한 이름 연결": {
+    "ko": "선택한 이름 연결",
+    "en": "Map selected names",
+    "th": "จับคู่ชื่อที่เลือก"
+  },
+  "종 구분 열 표시": {
+    "ko": "종 구분 열 표시",
+    "en": "Show delimitation columns",
+    "th": "แสดงคอลัมน์การจำแนกชนิด"
+  },
+  "방법 불일치 강조": {
+    "ko": "방법 불일치 강조",
+    "en": "Highlight method disagreements",
+    "th": "เน้นผลที่วิธีต่าง ๆ ไม่สอดคล้องกัน"
+  },
+  "합의 열 표시": {
+    "ko": "합의 열 표시",
+    "en": "Show consensus column",
+    "th": "แสดงคอลัมน์ฉันทามติ"
+  },
+  "범례 표시": {
+    "ko": "범례 표시",
+    "en": "Show legend",
+    "th": "แสดงคำอธิบายสัญลักษณ์"
+  },
+  "그룹 이름 표시": {
+    "ko": "그룹 이름 표시",
+    "en": "Show group names",
+    "th": "แสดงชื่อกลุ่ม"
+  },
+  "막대 색 방식": {
+    "ko": "막대 색 방식",
+    "en": "Bar color mode",
+    "th": "รูปแบบสีแท่ง"
+  },
+  "검정·회색 교대": {
+    "ko": "검정·회색 교대",
+    "en": "Alternate black and gray",
+    "th": "สลับสีดำและเทา"
+  },
+  "그룹별 색": {
+    "ko": "그룹별 색",
+    "en": "Color by group",
+    "th": "ใช้สีตามกลุ่ม"
+  },
+  "단색 선택": {
+    "ko": "단색 선택",
+    "en": "Single color",
+    "th": "เลือกสีเดียว"
+  },
+  "막대 폭 (px)": {
+    "ko": "막대 폭 (px)",
+    "en": "Bar width (px)",
+    "th": "ความกว้างแท่ง (พิกเซล)"
+  },
+  "열 간격 (px)": {
+    "ko": "열 간격 (px)",
+    "en": "Column gap (px)",
+    "th": "ระยะห่างระหว่างคอลัมน์ (พิกเซล)"
+  },
+  "열 머리 방향": {
+    "ko": "열 머리 방향",
+    "en": "Header orientation",
+    "th": "ทิศทางหัวคอลัมน์"
+  },
+  "가로": {
+    "ko": "가로",
+    "en": "Horizontal",
+    "th": "แนวนอน"
+  },
+  "세로 회전": {
+    "ko": "세로 회전",
+    "en": "Rotate vertically",
+    "th": "หมุนเป็นแนวตั้ง"
+  },
+  "그룹 이름 위치": {
+    "ko": "그룹 이름 위치",
+    "en": "Group label position",
+    "th": "ตำแหน่งชื่อกลุ่ม"
+  },
+  "막대 오른쪽": {
+    "ko": "막대 오른쪽",
+    "en": "Right of bar",
+    "th": "ด้านขวาของแท่ง"
+  },
+  "열 중앙": {
+    "ko": "열 중앙",
+    "en": "Column center",
+    "th": "กึ่งกลางคอลัมน์"
+  },
+  "싱글턴 표시": {
+    "ko": "싱글턴 표시",
+    "en": "Singleton style",
+    "th": "รูปแบบกลุ่มสมาชิกเดียว"
+  },
+  "짧은 막대": {
+    "ko": "짧은 막대",
+    "en": "Short bar",
+    "th": "แท่งสั้น"
+  },
+  "점": {
+    "ko": "점",
+    "en": "Dot",
+    "th": "จุด"
+  },
+  "방법별 요약": {
+    "ko": "방법별 요약",
+    "en": "Summary by method",
+    "th": "สรุปตามวิธี"
+  },
+  "방법": {
+    "ko": "방법",
+    "en": "Method",
+    "th": "วิธี"
+  },
+  "그룹 수": {
+    "ko": "그룹 수",
+    "en": "Groups",
+    "th": "จำนวนกลุ่ม"
+  },
+  "싱글턴": {
+    "ko": "싱글턴",
+    "en": "Singletons",
+    "th": "กลุ่มสมาชิกเดียว"
+  },
+  "단계통이 아닌 그룹": {
+    "ko": "단계통이 아닌 그룹",
+    "en": "Non-monophyletic groups",
+    "th": "กลุ่มที่ไม่เป็นกลุ่มชาติพันธุ์เดียว"
+  },
+  "방법 간 일치도": {
+    "ko": "방법 간 일치도",
+    "en": "Agreement between methods",
+    "th": "ความสอดคล้องระหว่างวิธี"
+  },
+  "방법 A": {
+    "ko": "방법 A",
+    "en": "Method A",
+    "th": "วิธี A"
+  },
+  "방법 B": {
+    "ko": "방법 B",
+    "en": "Method B",
+    "th": "วิธี B"
+  },
+  "공통 말단": {
+    "ko": "공통 말단",
+    "en": "Shared tips",
+    "th": "ปลายกิ่งที่มีร่วมกัน"
+  },
+  "같은 그룹 쌍의 Jaccard": {
+    "ko": "같은 그룹 쌍의 Jaccard",
+    "en": "Co-assigned pair Jaccard",
+    "th": "ดัชนี Jaccard ของคู่ที่อยู่กลุ่มเดียวกัน"
+  },
+  "원형 보기에서는 종 구분 열을 표시하지 않습니다. 직각 보기로 바꾸십시오.": {
+    "ko": "원형 보기에서는 종 구분 열을 표시하지 않습니다. 직각 보기로 바꾸십시오.",
+    "en": "Delimitation columns are unavailable in circular view. Switch to rectangular view.",
+    "th": "ไม่สามารถแสดงคอลัมน์การจำแนกชนิดในมุมมองวงกลมได้ โปรดเปลี่ยนเป็นมุมมองสี่เหลี่ยม"
+  },
+  "요약 CSV 내보내기": {
+    "ko": "요약 CSV 내보내기",
+    "en": "Export summary CSV",
+    "th": "ส่งออกสรุปเป็น CSV"
+  },
+  "완료": {
+    "ko": "완료",
+    "en": "Done",
+    "th": "เสร็จสิ้น"
+  },
+  "파일당 최대 8 MB · 말단 10,000개 이상 · 브라우저에서 처리": {
+    "ko": "파일당 최대 8 MB · 말단 10,000개 이상 · 브라우저에서 처리",
+    "en": "8 MB per file · 10,000+ tips · processed in the browser",
+    "th": "ไม่เกิน 8 MB ต่อไฟล์ · ปลายกิ่งมากกว่า 10,000 · ประมวลผลในเบราว์เซอร์"
+  },
+  "종 구분 결과 비교": {
+    "ko": "종 구분 결과 비교",
+    "en": "Compare species delimitations",
+    "th": "เปรียบเทียบผลการจำแนกชนิด"
+  },
+  "트리에만 있는 이름": {
+    "ko": "트리에만 있는 이름",
+    "en": "Names only in the tree",
+    "th": "ชื่อที่พบเฉพาะในทรี"
+  },
+  "합의": {
+    "ko": "합의",
+    "en": "Consensus",
+    "th": "ฉันทามติ"
+  },
+  "섞임": {
+    "ko": "섞임",
+    "en": "Mixed",
+    "th": "ผสม"
+  },
+  "줄무늬: 접힌 혼합 그룹": {
+    "ko": "줄무늬: 접힌 혼합 그룹",
+    "en": "Hatching: mixed collapsed clade",
+    "th": "ลายเส้น: กลุ่มที่ยุบแล้วมีหลายกลุ่ม"
+  },
+  "!: 단계통 아님": {
+    "ko": "!: 단계통 아님",
+    "en": "!: non-monophyletic",
+    "th": "!: ไม่เป็นกลุ่มชาติพันธุ์เดียว"
+  },
+  "빨간 테두리: 방법 불일치": {
+    "ko": "빨간 테두리: 방법 불일치",
+    "en": "Red outline: method disagreement",
+    "th": "กรอบสีแดง: วิธีให้ผลไม่สอดคล้องกัน"
+  },
+  "점: 싱글턴": {
+    "ko": "점: 싱글턴",
+    "en": "Dot: singleton",
+    "th": "จุด: กลุ่มสมาชิกเดียว"
+  },
+  "일치 {matched} · 정확 {exact} · 정규화 {normalized} · 수동 {manual} · 파일 불일치 {unmatched} · 트리 누락 {missing}": {
+    "ko": "일치 {matched} · 정확 {exact} · 정규화 {normalized} · 수동 {manual} · 파일 불일치 {unmatched} · 트리 누락 {missing}",
+    "en": "Matched {matched} · Exact {exact} · Normalized {normalized} · Manual {manual} · Unmatched file names {unmatched} · Unmatched tree tips {missing}",
+    "th": "จับคู่ได้ {matched} · ตรงตัว {exact} · ปรับชื่อ {normalized} · จับคู่เอง {manual} · ชื่อในไฟล์ไม่ตรง {unmatched} · ปลายกิ่งที่ไม่ตรง {missing}"
+  },
+  "아직 종 구분 자료가 없습니다.": {
+    "ko": "아직 종 구분 자료가 없습니다.",
+    "en": "No delimitation data imported yet.",
+    "th": "ยังไม่มีข้อมูลการจำแนกชนิด"
+  },
+  "삭제": {
+    "ko": "삭제",
+    "en": "Remove",
+    "th": "ลบ"
+  },
+  "종 구분 방법을 삭제했습니다.": {
+    "ko": "종 구분 방법을 삭제했습니다.",
+    "en": "Removed a delimitation method.",
+    "th": "ลบวิธีการจำแนกชนิดแล้ว"
+  },
+  "목록이 길어 200개까지만 표시합니다.": {
+    "ko": "목록이 길어 200개까지만 표시합니다.",
+    "en": "Only the first 200 entries are shown.",
+    "th": "แสดงเฉพาะ 200 รายการแรก"
+  },
+  "연결 해제": {
+    "ko": "연결 해제",
+    "en": "Unmap",
+    "th": "ยกเลิกการจับคู่"
+  },
+  "가상 종 구분 예제를 불러왔습니다.": {
+    "ko": "가상 종 구분 예제를 불러왔습니다.",
+    "en": "Loaded synthetic delimitation example.",
+    "th": "โหลดตัวอย่างการจำแนกชนิดแบบจำลองแล้ว"
+  },
+  "말단 이름을 연결했습니다.": {
+    "ko": "말단 이름을 연결했습니다.",
+    "en": "Mapped the tip name.",
+    "th": "จับคู่ชื่อปลายกิ่งแล้ว"
+  },
+  "종 구분 방법은 최대 24개까지 지원합니다.": {
+    "ko": "종 구분 방법은 최대 24개까지 지원합니다.",
+    "en": "Up to 24 methods are supported.",
+    "th": "รองรับได้สูงสุด 24 วิธี"
+  },
+  "종 구분 자료를 찾지 못했습니다.": {
+    "ko": "종 구분 자료를 찾지 못했습니다.",
+    "en": "No species delimitation assignments found.",
+    "th": "ไม่พบข้อมูลการจัดกลุ่มชนิด"
+  },
+  "{count}개 방법을 추가했습니다.": {
+    "ko": "{count}개 방법을 추가했습니다.",
+    "en": "Added {count} methods.",
+    "th": "เพิ่มแล้ว {count} วิธี"
+  },
+  "SPECIES DELIMITATION": {
+    "ko": "SPECIES DELIMITATION",
+    "en": "SPECIES DELIMITATION",
+    "th": "การจำแนกขอบเขตชนิด"
+  },
+  "Adjusted Rand index": {
+    "ko": "Adjusted Rand index",
+    "en": "Adjusted Rand index",
+    "th": "ดัชนีแรนด์ปรับแก้"
   }
 });
