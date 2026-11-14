@@ -1,16 +1,59 @@
 # Clade Studio
 
-**Offline phylogenetic tree editor · Version 1.8**
+**Offline phylogenetic tree editor · Version 1.9**
 
 [한국어](README.md) · [ภาษาไทย](README_TH.md)
 
 ## Open the application
 
-1. Download `Clade_Studio_Offline_v1.8_EN.html` from the repository's Releases, or download and extract the source ZIP.
+1. Download `Clade_Studio_Offline_v1.9_EN.html` from the repository's Releases, or download and extract the source ZIP.
 2. Open the HTML file in Chrome or Edge. No installation, server, or internet connection is required.
 3. Choose **Open tree** or drop a tree file onto the workspace. Try **Open example tree** to explore the controls.
 
 The header's **Language** menu switches between Korean, English, and Thai. All three HTML editions have the same features; only their initial language differs. Your choice is remembered separately for each starting edition when browser storage is available. Switching language preserves tree data, scientific names, custom labels, taxon names, and undo history. Language preference is separate from project files.
+
+
+## v1.9: Species delimitation comparison
+
+Click **Species delimitation** in the tree toolbar to import delimitation group assignments. Each method becomes a column to the right of the rectangular tree. Import multiple files together or sequentially, and use **Open species delimitation example** in the example menu to load a synthetic four-method demonstration.
+
+**Wide CSV/TSV** (one method per column):
+```csv
+taxon,ASAP,ABGD,bPTP,GMYC
+A1,A,A,1,A
+A2,A,A,1,A
+B1,B,B,2,B
+```
+
+**Long CSV/TSV** (tip, method, group):
+```tsv
+taxon	method	group
+A1	ASAP	A
+A2	ASAP	A
+B1	ABGD	B
+```
+
+Verified supported output variants:
+
+| Method | Recognized content | Synthetic fixture |
+| --- | --- | --- |
+| ASAP | `Partition_N.csv` with tip and numeric group | [ASAP](tests/fixtures/asap.Partition_1.csv) |
+| ABGD | `Group[ N ] n: K ;id: ...` entries | [ABGD](tests/fixtures/abgd.groupe1.txt) |
+| bPTP / mPTP | `Species N:` / `Species N (support = ...)` specimen lists | [bPTP](tests/fixtures/ptp.PTPhSupportPartition.txt), [mPTP](tests/fixtures/mptp.webserver.txt) |
+| GMYC | Table containing `GMYC_spec,sample_name` | [GMYC](tests/fixtures/gmyc.csv) |
+| BOLD BIN | CSV containing `processid` or `sampleid` and `bin_uri` | [BIN](tests/fixtures/bold.csv) |
+
+The supported variants are grounded in documented/public example output formats; **no research data are committed**. For alternative tool outputs (e.g. SPART, serialized R objects, posterior reports) supply a representative export containing headers and a few records for verification. No unverified parser is enabled. When auto-detection is not possible, choose the format explicitly.
+
+Tip matching uses **exact names first, then whitespace/underscore/quote normalization**. Unmatched tip names on either side are shown separately. Use the manual mapping controls; unmatched tips are never silently paired.
+
+Adjacent visible tips with the same group are drawn as one bar. Discontinuous or non-monophyletic groups are split into separate bars, with dashed linking and warning marks. Mixed collapsed clades use hatching. Singletons can be bars or dots. Configure widths, gaps, colors, labels, and header orientation. The new columns sit next to the existing taxon bands without overlap. Circular views omit the columns and display an explanation.
+
+The summary reports the number of groups, singletons, non-monophyletic groups and pairwise **coassignment Jaccard** and **adjusted Rand index**, with CSV export. Optional consensus columns show only exactly matching groups across all methods. All operations support undo/redo. Version 1.9 saves settings, assignments, and mappings in **project schema 2**, while opening existing schema 1 (v1.8) projects. SVG and PNG include the columns; Newick output remains unchanged.
+
+Examples: [synthetic tree](examples/demo-species.nwk), [four-method table](examples/demo-delimitation.csv), [example SVG](examples/demo-species.svg).
+
+**Benchmark**: `node tests/benchmark-delimitation-v19.mjs` (10,000 synthetic tips × five methods). Development commands are `npm run check`, `npm test`, and `python3 build-offline.py`.
 
 ## Main features
 
