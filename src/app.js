@@ -77,7 +77,13 @@ function draw(){
  }
  const groupRight=drawGroups(defs,backgroundLayer,annotationLayer,textLayer,maxX);
  drawDelimitation(g,defs,Math.max(maxX,groupRight||maxX)+24,fontFamily);
- $('groupNotice').hidden=!(groups.some(g=>g.visible)&&(options.layout==='circular'||groupState.partialCount));$('groupNotice').textContent=options.layout==='circular'?t('분류군 색 띠·배경은 직각 보기에서 표시됩니다. 가지·라벨 색은 원형 보기에도 적용됩니다.'):t('접힌 도형 일부에만 해당하는 분류군 {count}개는 범위 표시를 생략했습니다. 해당 도형을 펼쳐 확인하십시오.',{count:groupState.partialCount});
+ const hasGroupNotice=groups.some(g=>g.visible)&&(options.layout==='circular'||groupState.partialCount);
+ const hasDelimNotice=delimitation.settings.show&&delimitation.methods.length>0&&options.layout==='circular';
+ $('groupNotice').hidden=!(hasGroupNotice||hasDelimNotice);
+ const notices=[];
+ if(hasGroupNotice)notices.push(options.layout==='circular'?t('분류군 색 띠·배경은 직각 보기에서 표시됩니다. 가지·라벨 색은 원형 보기에도 적용됩니다.'):t('접힌 도형 일부에만 해당하는 분류군 {count}개는 범위 표시를 생략했습니다. 해당 도형을 펼쳐 확인하십시오.',{count:groupState.partialCount}));
+ if(hasDelimNotice)notices.push(t('원형 보기에서는 종 구분 열을 표시하지 않습니다. 직각 보기로 바꾸십시오.'));
+ $('groupNotice').textContent=notices.join(' ');
  // Bounds include full labels; browser geometry prevents clipped vector exports.
  try{const b=g.getBBox();if(b.width>0){minX=b.x;minY=b.y;maxX=b.x+b.width;maxY=b.y+b.height;}}catch{}
  if(options.title){append(g,'text',{x:minX,y:minY-48,fill:'#222222','font-size':18,'font-weight':500,'font-family':fontFamily},title||t('Untitled tree'));if(sample)append(g,'text',{x:minX,y:minY-29,fill:'#555555','font-size':9,'font-family':fontFamily},t('ILLUSTRATIVE DATA · NOT A RESEARCH RESULT'));minY-=70;maxX=Math.max(maxX,minX+title.length*10);}
