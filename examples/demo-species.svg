@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-70 -88 1248 840" width="1248" height="840">
+<title>Clade Studio v1.9: synthetic species delimitation comparison</title>
+<desc>Illustrative synthetic tree with ASAP, ABGD, bPTP, and GMYC assignments. Not a scientific result.</desc>
+<rect x="-70" y="-88" width="1248" height="840" fill="#fff"/>
+<defs><pattern id="mixed" width="5" height="5" patternUnits="userSpaceOnUse"><path d="M0 5L5 0" stroke="#666" stroke-width="1"/></pattern></defs>
+<g stroke="#262626" stroke-width="1.3" fill="none">
+<path d="M0.00,356.00V128.50H110.05"/>
+<path d="M110.05,128.50V58.50H244.86"/>
+<path d="M244.86,58.50V23.50H338.40"/>
+<path d="M338.40,23.50V6.00H412.68"/>
+<path d="M338.40,23.50V41.00H401.67"/>
+<path d="M244.86,58.50V93.50H321.89"/>
+<path d="M321.89,93.50V76.00H412.68"/>
+<path d="M321.89,93.50V111.00H401.67"/>
+<path d="M110.05,128.50V198.50H250.36"/>
+<path d="M250.36,198.50V163.50H349.40"/>
+<path d="M349.40,163.50V146.00H429.19"/>
+<path d="M349.40,163.50V181.00H418.18"/>
+<path d="M250.36,198.50V233.50H330.14"/>
+<path d="M330.14,233.50V216.00H396.17"/>
+<path d="M330.14,233.50V251.00H415.43"/>
+<path d="M0.00,356.00V408.50H126.56"/>
+<path d="M126.56,408.50V338.50H255.86"/>
+<path d="M255.86,338.50V303.50H352.15"/>
+<path d="M352.15,303.50V286.00H434.69"/>
+<path d="M352.15,303.50V321.00H412.68"/>
+<path d="M255.86,338.50V373.50H327.39"/>
+<path d="M327.39,373.50V356.00H382.42"/>
+<path d="M327.39,373.50V391.00H412.68"/>
+<path d="M126.56,408.50V478.50H236.60"/>
+<path d="M236.60,478.50V443.50H349.40"/>
+<path d="M349.40,443.50V426.00H423.68"/>
+<path d="M349.40,443.50V461.00H448.44"/>
+<path d="M236.60,478.50V513.50H319.14"/>
+<path d="M319.14,513.50V496.00H398.92"/>
+<path d="M319.14,513.50V531.00H396.17"/>
+<path d="M0.00,356.00V583.50H330.14"/>
+<path d="M330.14,583.50V566.00H536.48"/>
+<path d="M330.14,583.50V601.00H575.00"/>
+</g>
+<g font-family="Arial, sans-serif" fill="#111">
+<path d="M412.68,6.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="10.00" font-size="12">Araneus sp. A1</text>
+<path d="M401.67,41.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="45.00" font-size="12">Araneus sp. A2</text>
+<path d="M412.68,76.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="80.00" font-size="12">Araneus sp. A3</text>
+<path d="M401.67,111.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="115.00" font-size="12">Araneus sp. A4</text>
+<path d="M429.19,146.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="150.00" font-size="12">Araneus sp. B1</text>
+<path d="M418.18,181.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="185.00" font-size="12">Araneus sp. B2</text>
+<path d="M396.17,216.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="220.00" font-size="12">Araneus sp. B3</text>
+<path d="M415.43,251.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="255.00" font-size="12">Araneus sp. B4</text>
+<path d="M434.69,286.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="290.00" font-size="12">Araneus sp. C1</text>
+<path d="M412.68,321.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="325.00" font-size="12">Araneus sp. C2</text>
+<path d="M382.42,356.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="360.00" font-size="12">Araneus sp. C3</text>
+<path d="M412.68,391.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="395.00" font-size="12">Araneus sp. C4</text>
+<path d="M423.68,426.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="430.00" font-size="12">Araneus sp. D1</text>
+<path d="M448.44,461.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="465.00" font-size="12">Araneus sp. D2</text>
+<path d="M398.92,496.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="500.00" font-size="12">Araneus sp. D3</text>
+<path d="M396.17,531.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="535.00" font-size="12">Araneus sp. D4</text>
+<path d="M536.48,566.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="570.00" font-size="12">Outgroup A</text>
+<path d="M575.00,601.00H587" stroke="#bbb" stroke-width=".6" stroke-dasharray="2,3"/>
+<text x="593" y="605.00" font-size="12">Outgroup B</text>
+</g>
+<text x="742" y="-22" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="14">ASAP</text>
+<rect x="735" y="-1.00" width="14" height="119.00" fill="#151515"/>
+<rect x="735" y="139.00" width="14" height="119.00" fill="#969696"/>
+<rect x="735" y="279.00" width="14" height="119.00" fill="#151515"/>
+<rect x="735" y="419.00" width="14" height="119.00" fill="#969696"/>
+<rect x="735" y="559.00" width="14" height="49.00" fill="#151515"/>
+<text x="834" y="-22" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="14">ABGD</text>
+<rect x="827" y="-1.00" width="14" height="119.00" fill="#151515"/>
+<rect x="827" y="139.00" width="14" height="119.00" fill="#969696"/>
+<rect x="827" y="279.00" width="14" height="49.00" fill="#151515"/>
+<rect x="827" y="349.00" width="14" height="49.00" fill="#969696"/>
+<rect x="827" y="419.00" width="14" height="119.00" fill="#151515"/>
+<rect x="827" y="559.00" width="14" height="49.00" fill="#969696"/>
+<text x="926" y="-22" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="14">bPTP</text>
+<rect x="919" y="-1.00" width="14" height="49.00" fill="#151515"/>
+<rect x="919" y="69.00" width="14" height="49.00" fill="#969696"/>
+<rect x="919" y="139.00" width="14" height="119.00" fill="#151515"/>
+<rect x="919" y="279.00" width="14" height="259.00" fill="#969696"/>
+<rect x="919" y="559.00" width="14" height="49.00" fill="#151515"/>
+<text x="1018" y="-22" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="14">GMYC</text>
+<rect x="1011" y="-1.00" width="14" height="119.00" fill="#151515"/>
+<rect x="1011" y="139.00" width="14" height="49.00" fill="#969696"/>
+<rect x="1011" y="209.00" width="14" height="49.00" fill="#151515"/>
+<rect x="1011" y="279.00" width="14" height="119.00" fill="#969696"/>
+<rect x="1011" y="419.00" width="14" height="119.00" fill="#151515"/>
+<rect x="1011" y="562.50" width="14" height="7.00" fill="#969696"/>
+<rect x="1011" y="597.50" width="14" height="7.00" fill="#151515"/>
+<text x="-5" y="-57" font-family="Arial" font-size="17" fill="#161616">Species delimitation comparison — synthetic example</text>
+<text x="0" y="662" font-family="Arial" font-size="12" fill="#666">Black / grey: groups · Dashed: discontiguous group · !: non-monophyletic</text>
+<text x="0" y="684" font-family="Arial" font-size="11" fill="#888">Illustrative data only; no real taxonomic claims.</text>
+</svg>
