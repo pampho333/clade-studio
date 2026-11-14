@@ -178,3 +178,15 @@ test('PTP malformed output with an empty or duplicated species group is rejected
  assert.throws(()=>parseDelimitationTable(noTips,'auto','a.PTPMLPartition.txt'),/PTP|group/i);
  assert.throws(()=>parseDelimitationTable(duplicate,'auto','a.PTPMLPartition.txt'),/PTP|Duplicate/i);
 });
+
+
+test('PTP-specific accession aliases are not applied to a shared generic-table name',()=>{
+ const t=parseNewick("('OM089662.1':1,B:1);");
+ const m=matchDelimitation(t,{methods:[
+  {name:'bPTP ML',sourceFormat:'bptp-ml',assignments:{OM089662_1:'Species 1'}},
+  {name:'ASAP',assignments:{OM089662_1:'Species 1'}}
+ ]});
+ assert.deepEqual(m.unmatched,['OM089662_1']);
+ assert.equal(m.methods[0].byId.size,0);
+ assert.equal(m.methods[1].byId.size,0);
+});
