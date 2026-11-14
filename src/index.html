@@ -161,6 +161,7 @@
 <dialog id="delimDialog" class="delim-dialog">
  <div class="dialog-header"><div><span class="eyebrow">SPECIES DELIMITATION</span><h2>종 구분 결과 비교 열</h2></div><button class="icon-button" data-close="delimDialog" aria-label="닫기"><svg><use href="#i-close"/></svg></button></div>
  <p class="muted-note">자료는 브라우저 안에서만 처리됩니다. 파일을 계속 추가하면 방법별 열이 만들어집니다.</p>
+ <p class="muted-note">bPTP: PTPMLPartition은 기본 ML 분할, PTPhSupportPartition은 별도 후보 분할로 불러옵니다. PTPPartitonSummary는 여러 후보 그룹이 겹쳐 종 구분 열로 처리하지 않습니다.</p>
  <div class="delim-import">
   <label for="delimFormat">입력 형식</label>
   <select id="delimFormat"><option value="auto">자동 감지</option><option value="wide">넓은 표 · CSV/TSV</option><option value="long">긴 표 · CSV/TSV</option><option value="asap">ASAP Partition CSV</option><option value="abgd">ABGD groupe TXT</option><option value="bptp">bPTP partition TXT</option><option value="mptp">mPTP species TXT</option><option value="gmyc">GMYC spec.list</option><option value="bold">BOLD BIN CSV</option></select>
