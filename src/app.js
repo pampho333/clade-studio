@@ -175,6 +175,134 @@ function drawDelimitation(svg,defs,startX,fontFamily){
  }
 }
 
+
+// v1.9 species-delimitation import, name reconciliation, settings and reports.
+function renderDelimPanel(){
+ const dlg=$('delimDialog');if(!dlg.open)return;
+ const state=delimMatched||matchDelimitation(tree,delimitation);
+ const summary=delimitationSummary(tree,layout,state);
+ const status=t('일치 {matched} · 정확 {exact} · 정규화 {normalized} · 수동 {manual} · 파일 불일치 {unmatched} · 트리 누락 {missing}',{
+  matched:state.matched,exact:state.exact,normalized:state.normalized,manual:state.manual,
+  unmatched:state.unmatched.length,missing:state.missing.length
+ });
+ $('delimMatchStatus').textContent=status;
+ const methodList=$('delimMethodList');methodList.replaceChildren();
+ if(!state.methods.length){const note=document.createElement('p');note.textContent=t('아직 종 구분 자료가 없습니다.');methodList.append(note);}
+ state.methods.forEach((m,i)=>{
+  const row=document.createElement('div');row.className='delim-method';
+  const name=document.createElement('span');name.textContent=m.name+' · '+m.byId.size+' / '+Object.keys(m.assignments).length;
+  const remove=document.createElement('button');remove.type='button';remove.textContent=t('삭제');
+  remove.onclick=()=>mutate(()=>{delimitation.methods.splice(i,1);},{fit:true,message:t('종 구분 방법을 삭제했습니다.')});
+  row.append(name,remove);methodList.append(row);
+ });
+ const select=(id,items)=>{const el=$(id),was=el.value;el.replaceChildren();for(const item of items){
+  const opt=document.createElement('option');opt.value=item.value;opt.textContent=item.label;el.append(opt);
+ }if(items.some(x=>x.value===was))el.value=was;};
+ select('delimMapSource',state.unmatched.map(s=>({value:s,label:s})));
+ select('delimMapTarget',state.leaves.map(n=>({value:n.id,label:n.name+' ['+n.id+']'})));
+ $('delimMapBtn').disabled=!state.unmatched.length||!state.leaves.length;
+ const mismatch=(id,items,title)=>{
+  const el=$(id);el.replaceChildren();
+  const h=document.createElement('strong');h.textContent=t(title)+' ('+items.length+')';el.append(h);
+  for(const name of items.slice(0,200)){const p=document.createElement('div');p.textContent=name;el.append(p);}
+  if(items.length>200){const p=document.createElement('div');p.textContent=t('목록이 길어 200개까지만 표시합니다.');el.append(p);}
+ };
+ mismatch('delimUnmatched',state.unmatched,'파일에만 있는 이름');
+ mismatch('delimMissing',state.missing,'트리에만 있는 이름');
+ const mm=$('delimManualMappings');mm.replaceChildren();
+ for(const [source,target] of Object.entries(delimitation.manualMap)){
+  const row=document.createElement('div');row.className='delim-method';
+  const label=document.createElement('span');const targetNode=index.nodes.get(target);
+  label.textContent=source+' → '+(targetNode?.name||target);
+  const remove=document.createElement('button');remove.textContent=t('연결 해제');
+  remove.onclick=()=>mutate(()=>{delete delimitation.manualMap[source];},{fit:true});
+  row.append(label,remove);mm.append(row);
+ }
+ const settings=state.settings;
+ for(const [key,id] of [['show','delimShow'],['disagreements','delimDisagreements'],
+  ['consensus','delimConsensus'],['legend','delimLegend'],['showLabels','delimShowLabels']])$(id).checked=settings[key];
+ for(const [key,id] of [['colorMode','delimColorMode'],['solidColor','delimSolidColor'],
+  ['barWidth','delimBarWidth'],['columnGap','delimColumnGap'],['headerRotation','delimHeaderRotation'],
+  ['labelPosition','delimLabelPosition'],['singleton','delimSingleton']])$(id).value=settings[key];
+ $('delimCircularHint').hidden=options.layout==='rectangular';
+ const tbody=$('delimSummaryRows');tbody.replaceChildren();for(const m of summary.rows){
+  const tr=document.createElement('tr');
+  for(const v of [m.method,m.groups,m.singletons,m.nonMonophyletic.join(', ')||'—']){
+   const cell=document.createElement('td');cell.textContent=String(v);tr.append(cell);
+  }tbody.append(tr);
+ }
+ const pairs=$('delimPairRows');pairs.replaceChildren();for(const m of summary.pairs){
+  const tr=document.createElement('tr');
+  for(const v of [m.a,m.b,m.n,m.jaccard.toFixed(4),m.ari.toFixed(4)]){const cell=document.createElement('td');cell.textContent=String(v);tr.append(cell);}
+  pairs.append(tr);
+ }
+}
+function exampleDelimitation(){
+ const tmp=parseNewick(SAMPLE),leaves=[];walk(tmp,n=>{if(!n.children.length)leaves.push(n.name);});
+ const methods=['ASAP','ABGD','bPTP','GMYC'].map(name=>({name,assignments:{}}));
+ for(const name of leaves){
+  const m=name.match(/_([A-D])([1-4])$/),group=m?m[1]:'Outgroup',n=m?Number(m[2]):0;
+  methods[0].assignments[name]=group;
+  methods[1].assignments[name]=group==='C'?'C'+(n<=2?'1':'2'):group;
+  methods[2].assignments[name]=group==='A'?'A'+(n<=2?'1':'2'):group==='C'||group==='D'?'CD':group;
+  methods[3].assignments[name]=group==='B'?'B'+(n<=2?'1':'2'):group==='Outgroup'?name:group;
+ }
+ return methods;
+}
+function importDelimExample(){
+ mutate(()=>{demo();delimitation.methods=exampleDelimitation().map((m,i)=>({...m,id:'example-'+i}));},
+ {fit:true,message:t('가상 종 구분 예제를 불러왔습니다.')});
+ renderDelimPanel();
+}
+function delimCsvSummary(){
+ const stats=delimitationSummary(tree,layout,delimMatched);
+ const rows=[['type','method','other_method','assigned','groups','singletons','nonmonophyletic','shared_tips','coassignment_jaccard','adjusted_rand_index']];
+ for(const x of stats.rows)rows.push(['method',x.method,'',x.assigned,x.groups,x.singletons,x.nonMonophyletic.join(' | '),'','','']);
+ for(const x of stats.pairs)rows.push(['pair',x.a,x.b,'','','','',x.n,x.jaccard,x.ari]);
+ const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+ download(new Blob(['\uFEFF'+rows.map(row=>row.map(quote).join(',')).join('\r\n')+'\r\n'],{type:'text/csv;charset=utf-8'}),
+  safeFilename()+'_delimitation_summary.csv');
+}
+$('delimBtn').onclick=()=>{openDialog('delimDialog');renderDelimPanel();};
+$('delimClose').onclick=()=>$('delimDialog').close();
+$('delimChooseFile').onclick=()=>$('delimFileInput').click();
+$('delimLoadExample').onclick=importDelimExample;
+$('delimExportCsv').onclick=delimCsvSummary;
+$('delimMapBtn').onclick=()=>{
+ const source=$('delimMapSource').value,target=$('delimMapTarget').value;
+ if(!source||!target)return;
+ mutate(()=>{delimitation.manualMap[source]=target;},{fit:true,message:t('말단 이름을 연결했습니다.')});
+};
+$('delimFileInput').addEventListener('change',async e=>{
+ const files=[...e.target.files];e.target.value='';if(!files.length)return;
+ $('delimImportError').hidden=true;
+ try{
+  const added=[];for(const file of files){
+   if(file.size>8*1024*1024)throw new Error(t('8 MB 이하 파일을 사용하세요.'));
+   const parsed=parseDelimitationTable(await file.text(),$('delimFormat').value,file.name);
+   for(const m of parsed){
+    let name=m.name,serial=2;
+    while([...delimitation.methods,...added].some(x=>x.name===name)){name=m.name+' ('+serial+++')';}
+    added.push({id:'delim-'+(delimitation.methods.length+added.length+1),name,assignments:m.assignments});
+   }
+  }
+  if(delimitation.methods.length+added.length>24)throw new Error(t('종 구분 방법은 최대 24개까지 지원합니다.'));
+  if(!added.length)throw new Error(t('종 구분 자료를 찾지 못했습니다.'));
+  mutate(()=>delimitation.methods.push(...added),{fit:true,message:t('{count}개 방법을 추가했습니다.',{count:added.length})});
+ }catch(error){$('delimImportError').textContent=error.message;$('delimImportError').hidden=false;}
+});
+for(const [id,key,kind] of [
+ ['delimShow','show','bool'],['delimDisagreements','disagreements','bool'],['delimConsensus','consensus','bool'],
+ ['delimLegend','legend','bool'],['delimShowLabels','showLabels','bool'],['delimColorMode','colorMode','str'],
+ ['delimSolidColor','solidColor','str'],['delimBarWidth','barWidth','num'],['delimColumnGap','columnGap','num'],
+ ['delimHeaderRotation','headerRotation','str'],['delimLabelPosition','labelPosition','str'],['delimSingleton','singleton','str']
+]){
+ $(id).addEventListener('change',()=>{
+  const value=kind==='bool'?$(id).checked:kind==='num'?Number($(id).value):$(id).value;
+  mutate(()=>{delimitation.settings[key]=value;delimitation=normalizeDelimitation(delimitation);},{fit:true});
+ });
+}
+
 function applyView(){$('viewportGroup').setAttribute('transform',`translate(${view.x},${view.y}) scale(${view.k})`);$('zoomValue').textContent=`${Math.round(view.k*100)}%`;}
 function fitView(){const r=$('canvasViewport').getBoundingClientRect();if(!r.width||!r.height)return;view.k=Math.max(.015,Math.min(1.5,Math.min((r.width-34)/bounds.width,(r.height-34)/bounds.height)));view.x=(r.width-bounds.width*view.k)/2-bounds.x*view.k;view.y=(r.height-bounds.height*view.k)/2-bounds.y*view.k;applyView();}
 function zoom(factor,point){const r=$('canvasViewport').getBoundingClientRect(),p=point||{x:r.width/2,y:r.height/2},k=clamp(view.k*factor,.015,8);view.x=p.x-(p.x-view.x)*k/view.k;view.y=p.y-(p.y-view.y)*k/view.k;view.k=k;applyView();}
