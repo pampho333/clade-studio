@@ -1,0 +1,15 @@
+# Max likilhood partition
+Species 1 (support = 0.898)
+     taxon_01,taxon_02,taxon_03,taxon_04,taxon_05,taxon_06
+
+Species 2 (support = 1.000)
+     taxon_07
+
+Species 3 (support = 0.825)
+     taxon_08,taxon_09
+
+Species 4 (support = 0.169)
+     taxon_10,taxon_11,taxon_12,taxon_13
+
+Species 5 (support = 0.781)
+     taxon_14
