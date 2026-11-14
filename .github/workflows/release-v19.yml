@@ -31,7 +31,7 @@ jobs:
             examples/demo-species.nwk
       - name: Publish release
         env:
-          GH_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if gh release view v1.9 >/dev/null 2>&1; then
             gh release upload v1.9 Clade_Studio_Offline_v1.9.html \
