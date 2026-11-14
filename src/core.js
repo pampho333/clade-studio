@@ -320,8 +320,9 @@ export function matchDelimitation(tree,raw){
    // The PTP web server replaces the period in accession versions, e.g.
    // OM089662.1 -> OM089662_1. This alias is narrowly scoped to direct PTP
    // imports; no fuzzy or general numeric-suffix matching is performed.
-   if(!possibilities.length&&state.methods.some(m=>Object.hasOwn(m.assignments,name)&&
-      ['bptp-ml','bptp-high','bptp'].includes(m.sourceFormat))){
+   if(!possibilities.length&&state.methods.some(m=>Object.hasOwn(m.assignments,name))&&
+      state.methods.filter(m=>Object.hasOwn(m.assignments,name))
+        .every(m=>['bptp-ml','bptp-high','bptp'].includes(m.sourceFormat))){
     const versioned=name.match(/^([A-Za-z]{1,4}\d{4,10})_(\d+)$/);
     if(versioned){possibilities=exact.get(versioned[1]+'.'+versioned[2])||[];mode='normalized';}
    }
