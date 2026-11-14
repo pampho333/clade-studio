@@ -10,6 +10,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+concurrency:
+  group: clade-studio-v19-build
+  cancel-in-progress: false
 jobs:
   check-and-build:
     runs-on: ubuntu-latest
@@ -26,13 +29,16 @@ jobs:
         run: node tests/benchmark-delimitation-v19.mjs | tee benchmark-v19.txt
       - name: Rebuild offline single HTML with Python stdlib
         run: python3 build-offline.py
-      - name: Commit generated offline HTML
+      - name: Export synthetic example SVG
+        run: node tests/render-demo-svg.mjs
+      - name: Commit generated offline HTML and SVG
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html Clade_Studio_Offline_v1.9.html Clade_Studio_Offline_v1.9_EN.html Clade_Studio_Offline_v1.9_TH.html
+          git add index.html Clade_Studio_Offline_v1.9.html Clade_Studio_Offline_v1.9_EN.html Clade_Studio_Offline_v1.9_TH.html examples/demo-species.svg
           if ! git diff --cached --quiet; then
             git commit -m "build(v1.9): regenerate offline HTML from src"
+            git pull --rebase origin main
             git push
           fi
       - uses: actions/upload-artifact@v4
