@@ -1,5 +1,5 @@
 import {t,setLanguage,getLanguage,preferredLanguage,bindStaticTranslations} from './i18n.js';
-import {FONT_FAMILIES,fontFamilyFor,cleanFontName,DEFAULTS,SAMPLE,clamp,parseNewick,parseTreeFile,indexTree,walk,toNewick,styleFor,nodeLabel,layoutTree,revealAncestors,validateProject,normalizeItalicRanges,labelSegments,italicModeFor,normalizeGroups,resolveGroups,rerootTree,supportText,ladderizeTree} from './core.js';
+import {FONT_FAMILIES,fontFamilyFor,cleanFontName,DEFAULTS,SAMPLE,clamp,parseNewick,parseTreeFile,indexTree,walk,toNewick,styleFor,nodeLabel,layoutTree,revealAncestors,validateProject,normalizeItalicRanges,labelSegments,italicModeFor,normalizeGroups,resolveGroups,rerootTree,supportText,ladderizeTree,normalizeDelimitation,parseDelimitationTable,matchDelimitation,delimitationRuns,delimitationSummary,consensusAssignments,DELIMITATION_DEFAULTS} from './core.js';
 
 const $=id=>document.getElementById(id), NS='http://www.w3.org/2000/svg', STORE='clade-studio-project-v1';
 const defaultLanguage=document.documentElement.dataset.defaultLanguage||'ko';
@@ -11,7 +11,7 @@ let saveStatusKey='현재 브라우저에 자동 저장';
 function setSaveStatus(key){saveStatusKey=key;$('saveStatus').textContent=t(key);}
 function applyLanguage(){translateStatic();document.documentElement.lang=getLanguage();$('languageSelect').value=getLanguage();const version=document.querySelector('meta[name="clade-studio-version"]').content;document.title=t('Clade Studio — 수정 버전 {version}',{version});$('versionLabel').textContent=t('수정 버전 {version}',{version});setSaveStatus(saveStatusKey);}
 applyLanguage();
-let tree,styles={},groups=[],groupState,options={...DEFAULTS},title='',sample=true,selected=null,index,layout,bounds={x:0,y:0,width:100,height:100};
+let tree,styles={},groups=[],groupState,delimitation=normalizeDelimitation(),delimMatched=null,options={...DEFAULTS},title='',sample=true,selected=null,index,layout,bounds={x:0,y:0,width:100,height:100};
 let undoStack=[],redoStack=[],view={x:50,y:40,k:1},drag=null,rangeStart=null,saveTimer,toastTimer,searchQuery='',filename='',renderPending=false;
 function el(tag,attrs={},text){const n=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))if(v!==null&&v!==undefined)n.setAttribute(k,String(v));if(text!==undefined)n.textContent=text;return n;}
 function append(p,tag,attrs,text){const n=el(tag,attrs,text);p.append(n);return n;}
@@ -19,15 +19,15 @@ function appendLabel(p,attrs,text,style){const node=append(p,'text',{...attrs,'f
 function displayedStyle(id){return layout?.all.find(n=>n.id===id)?.style||styleFor(styles,id);}
 function icon(name){const s=el('svg',{'aria-hidden':'true'});s.append(el('use',{href:`#i-${name}`}));return s;}
 function toast(message,isError=false){$('toast').textContent=message;$('toast').classList.toggle('error',isError);$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),4200);}
-function snapshot(){return JSON.stringify({format:'clade-studio',version:1,tree,styles,groups,options,title,sample});}
+function snapshot(){return JSON.stringify({format:'clade-studio',version:2,tree,styles,groups,delimitation,options,title,sample});}
 function record(before){if(!before||before===snapshot())return;undoStack.push(before);if(undoStack.length>60)undoStack.shift();redoStack=[];}
 function mutate(fn,{fit=false,message=null}={}){const before=snapshot();fn();record(before);render();if(fit)fitView();if(message)toast(message);scheduleSave();}
-function restore(s){const p=validateProject(JSON.parse(s));({tree,styles,groups,options,title,sample}=p);index=indexTree(tree);if(!index.nodes.has(selected))selected=tree.id;render();scheduleSave();}
+function restore(s){const p=validateProject(JSON.parse(s));({tree,styles,groups,delimitation,options,title,sample}=p);index=indexTree(tree);if(!index.nodes.has(selected))selected=tree.id;render();scheduleSave();}
 function undo(){if(!undoStack.length)return;redoStack.push(snapshot());restore(undoStack.pop());toast(t('실행을 취소했습니다.'));}
 function redo(){if(!redoStack.length)return;undoStack.push(snapshot());restore(redoStack.pop());toast(t('다시 실행했습니다.'));}
 function scheduleSave(){clearTimeout(saveTimer);setSaveStatus('변경 내용 저장 중…');saveTimer=setTimeout(()=>{try{localStorage.setItem(STORE,snapshot());setSaveStatus('현재 브라우저에 자동 저장됨');}catch{setSaveStatus('자동 저장 불가 · 프로젝트 파일로 저장하세요');}},350);}
 function updateStyle(id,patch){styles[id]={...styles[id],...patch};}
-function demo(){tree=parseNewick(SAMPLE);styles={};groups=[];options={...DEFAULTS};title='Araneus · example tree';sample=true;filename='';index=indexTree(tree);let targets=[];walk(tree,n=>{if(n.children.length&&index.counts.get(n.id)===4)targets.push(n);});
+function demo(){tree=parseNewick(SAMPLE);styles={};groups=[];delimitation=normalizeDelimitation();options={...DEFAULTS};title='Araneus · example tree';sample=true;filename='';index=indexTree(tree);let targets=[];walk(tree,n=>{if(n.children.length&&index.counts.get(n.id)===4)targets.push(n);});
  const colors=['#1956a3','#a53924','#08754b','#70439b'];targets.forEach((n,i)=>{updateStyle(n.id,{label:`Clade ${String.fromCharCode(65+i)}`,fill:'#eeeeee'});groups.push({id:`group-${i}`,name:`Araneus sp. ${String.fromCharCode(65+i)}`,nodeIds:[n.id],color:colors[i%4]});});groups=normalizeGroups(groups,new Set(index.nodes.keys()));if(targets[1]){selected=targets[1].id;updateStyle(selected,{collapsed:true,widthMode:'auto',height:48});}else selected=tree.id;}
 function selectNode(id,{reveal=false,center=false}={}){if(!index.nodes.has(id))return;selected=id;if(reveal){const before=snapshot();revealAncestors(id,index,styles);record(before);scheduleSave();}render();if(center){const item=layout.all.find(n=>n.id===id);if(item){const r=$('canvasViewport').getBoundingClientRect();view.x=r.width*.38-item.x*view.k;view.y=r.height*.5-item.y*view.k;applyView();}}}
 function toggleCollapse(id=selected){const n=index.nodes.get(id);if(!n?.children.length)return;mutate(()=>updateStyle(id,{collapsed:!styleFor(styles,id).collapsed}));}
@@ -38,13 +38,14 @@ function rerootSelected(){
   mutate(()=>{tree=result.tree;styles=result.styles;groups=result.groups;options.alignLabels=true;searchQuery='';$('search').value='';},{fit:true,message:t('{name}와 나머지 트리가 루트에서 갈라지도록 재루팅했습니다. Ctrl+Z로 되돌릴 수 있습니다.',{name})});
  }catch(err){toast(err.message,true);}
 }
-function render(){index=indexTree(tree);layout=layoutTree(tree,styles,options);draw();renderList();renderInspector();syncOptions();$('projectTitle').value=title;$('undoBtn').disabled=!undoStack.length;$('redoBtn').disabled=!redoStack.length;
+function render(){index=indexTree(tree);layout=layoutTree(tree,styles,options);draw();if($('delimDialog').open)renderDelimPanel();renderList();renderInspector();syncOptions();$('projectTitle').value=title;$('undoBtn').disabled=!undoStack.length;$('redoBtn').disabled=!redoStack.length;
  let c=0;walk(tree,n=>{if(n.children.length&&styles[n.id]?.collapsed)c++;});$('totalTips').textContent=index.counts.get(tree.id);$('collapsedCount').textContent=c;$('treeStats').textContent=t('{tips} tips · {nodes} nodes · {collapsed} collapsed',{tips:index.counts.get(tree.id),nodes:index.nodes.size,collapsed:c});$('fileBadge').textContent=sample?t('예제 데이터'):(filename||t('내 트리'));$('canvasHint').textContent=sample?t('가상 예제 · 실제 계통관계를 나타내지 않습니다.'):t('도형 크기와 라벨은 오른쪽 패널에서 개별 조절할 수 있습니다.');
  const warnings=[];if(options.metric==='length'&&layout.missing)warnings.push(t('가지 길이 {count}개 누락 · 0으로 표시합니다. 위상 모드로 바꿀 수 있습니다.',{count:layout.missing}));if(layout.negative)warnings.push(t('음수 길이 {count}개 · 화면에서는 0으로 표시하며 원본 값은 보존합니다.',{count:layout.negative}));if(options.metric==='length'&&!layout.useLength)warnings.push(t('양수 가지 길이가 없어 위상 모드로 표시합니다.'));$('dataWarning').hidden=!warnings.length;$('dataWarning').textContent=warnings.join(' ');
 }
 function paintFor(n){return groupState?.branchColors.get(n.id)||styleFor(styles,n.id).color;}
 function labelPaint(n){return groupState?.labelColors.get(n.id)||styleFor(styles,n.id).color;}
 function draw(){
+ delimMatched=matchDelimitation(tree,delimitation);
  groupState=resolveGroups(tree,groups,layout,options);
  const g=$('drawing');g.replaceChildren();const defs=append(g,'defs'),backgroundLayer=append(g,'g',{'data-layer':'taxon-backgrounds','pointer-events':'none'}),branchLayer=append(g,'g',{'data-layer':'branches'}),shapeLayer=append(g,'g',{'data-layer':'shapes'}),textLayer=append(g,'g',{'data-layer':'labels'}),annotationLayer=append(g,'g',{'data-layer':'taxon-bars','pointer-events':'none'}),hitLayer=append(g,'g',{'data-layer':'hits','data-ui':'true'}),supportLayer=append(g,'g',{'data-layer':'support'}),selectionLayer=append(g,'g',{'data-layer':'selection','data-ui':'true'});
  const rect=options.layout==='rectangular';let minX=0,maxX=0,minY=0,maxY=layout.height;
@@ -74,7 +75,8 @@ function draw(){
      else{const flipped=Math.cos(n.angle)<0,angle=n.angle*180/Math.PI;const lx=Math.cos(n.angle)*(n.radius+tail+11),ly=Math.sin(n.angle)*(n.radius+tail+11);appendLabel(txt,{transform:`translate(${lx},${ly}) rotate(${angle+(flipped?180:0)})`,y:labelSize*.32,'text-anchor':flipped?'end':'start',fill:labelPaint(n.node),'font-family':fontFamily,'font-size':labelSize},name,n.style);}
    }
  }
- drawGroups(defs,backgroundLayer,annotationLayer,textLayer,maxX);
+ const groupRight=drawGroups(defs,backgroundLayer,annotationLayer,textLayer,maxX);
+ drawDelimitation(g,defs,Math.max(maxX,groupRight||maxX)+24,fontFamily);
  $('groupNotice').hidden=!(groups.some(g=>g.visible)&&(options.layout==='circular'||groupState.partialCount));$('groupNotice').textContent=options.layout==='circular'?t('분류군 색 띠·배경은 직각 보기에서 표시됩니다. 가지·라벨 색은 원형 보기에도 적용됩니다.'):t('접힌 도형 일부에만 해당하는 분류군 {count}개는 범위 표시를 생략했습니다. 해당 도형을 펼쳐 확인하십시오.',{count:groupState.partialCount});
  // Bounds include full labels; browser geometry prevents clipped vector exports.
  try{const b=g.getBBox();if(b.width>0){minX=b.x;minY=b.y;maxX=b.x+b.width;maxY=b.y+b.height;}}catch{}
@@ -85,7 +87,7 @@ function draw(){
  bounds={x:minX-35,y:minY-24,width:Math.max(200,maxX-minX+70),height:Math.max(160,maxY-minY+52)};applyView();
 }
 function drawGroups(defs,background,foreground,textLayer,fallbackRight){
- if(options.layout!=='rectangular')return;const active=groupState.groups.filter(g=>g.runs.length);if(!active.length)return;
+ if(options.layout!=='rectangular')return fallbackRight;const active=groupState.groups.filter(g=>g.runs.length);if(!active.length)return fallbackRight;
  let labelLeft=layout.width+10,right=fallbackRight;try{const b=textLayer.getBBox();labelLeft=b.x;right=b.x+b.width;}catch{}
  const widths=[],starts=[];for(const group of active){let width=0;if(group.showName){for(const line of group.name.split('\n')){const t=appendLabel(foreground,{'font-family':fontFamilyFor(options),'font-size':group.labelSize,'font-weight':600},line,{italicMode:group.italic?'scientific':'none'});try{width=Math.max(width,t.getBBox().width);}catch{width=Math.max(width,line.length*group.labelSize*.65);}t.remove();}}widths[group.lane]=Math.max(widths[group.lane]||0,(group.showBar?group.barWidth:0)+width+28,group.background!=='none'?group.backgroundWidth||0:0);}
  let cursor=right+22;for(let i=0;i<widths.length;i++){starts[i]=cursor;cursor+=(widths[i]||24)+18;}
@@ -232,8 +234,8 @@ document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.c
 document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}}));
 $('helpBtn').onclick=()=>openDialog('helpDialog');$('importBtn').onclick=()=>{$('importError').hidden=true;openDialog('importDialog');};$('exportBtn').onclick=()=>openDialog('exportDialog');$('chooseFile').onclick=()=>$('fileInput').click();
 function importError(err){const message=err instanceof SyntaxError?t('프로젝트 JSON 형식이 올바르지 않습니다.'):err instanceof Error?err.message:String(err);if($('importDialog').open){$('importError').textContent=message;$('importError').hidden=false;}else toast(message,true);}
-function loadProject(raw,name){const p=validateProject(raw);mutate(()=>{({tree,styles,groups,options,title,sample}=p);selected=tree.id;filename=name;searchQuery='';$('search').value='';},{fit:true});$('importDialog').close();toast(t('프로젝트와 개별 노드 설정을 불러왔습니다.'));}
-function loadTree(item,name){mutate(()=>{tree=item.tree;styles={};groups=[];options={...DEFAULTS};title=name.replace(/\.(nwk|newick|tre|tree|treefile|contree|nex|nexus|txt)$/i,'')||t('Untitled tree');if(item.multiple)title+=' · '+item.name;sample=false;selected=tree.id;filename=name||t('붙여넣은 트리');searchQuery='';$('search').value='';},{fit:true});$('importDialog').close();$('treePickerDialog').close();toast(t('{count}개 말단 노드를 불러왔습니다.',{count:index.counts.get(tree.id)}));}
+function loadProject(raw,name){const p=validateProject(raw);mutate(()=>{({tree,styles,groups,delimitation,options,title,sample}=p);selected=tree.id;filename=name;searchQuery='';$('search').value='';},{fit:true});$('importDialog').close();toast(t('프로젝트와 개별 노드 설정을 불러왔습니다.'));}
+function loadTree(item,name){mutate(()=>{tree=item.tree;styles={};groups=[];delimitation=normalizeDelimitation();options={...DEFAULTS};title=name.replace(/\.(nwk|newick|tre|tree|treefile|contree|nex|nexus|txt)$/i,'')||t('Untitled tree');if(item.multiple)title+=' · '+item.name;sample=false;selected=tree.id;filename=name||t('붙여넣은 트리');searchQuery='';$('search').value='';},{fit:true});$('importDialog').close();$('treePickerDialog').close();toast(t('{count}개 말단 노드를 불러왔습니다.',{count:index.counts.get(tree.id)}));}
 function loadContent(content,name=t('Untitled tree')){try{if(content.length>8*1024*1024)throw new Error(t('8 MB 이하 파일을 사용하세요.'));if(content.trim().startsWith('{')){loadProject(JSON.parse(content),name);return;}const trees=parseTreeFile(content);if(trees.length===1){loadTree(trees[0],name);return;}$('importDialog').close();const choices=$('treeChoices');choices.replaceChildren();trees.forEach((item,i)=>{const button=document.createElement('button');const nameEl=document.createElement('span'),count=document.createElement('small');nameEl.textContent=`${i+1}. ${item.name}`;count.textContent=t('{count} tips',{count:indexTree(item.tree).counts.get(item.tree.id)});button.append(nameEl,count);button.onclick=()=>loadTree({...item,multiple:true},name);choices.append(button);});openDialog('treePickerDialog');}catch(err){importError(err);}}
 async function loadFile(file){if(!file)return;if(file.size>8*1024*1024){importError(new Error(t('8 MB 이하 파일을 사용하세요.')));return;}try{loadContent(await file.text(),file.name);}catch(err){importError(err);}}
 $('fileInput').onchange=async()=>{await loadFile($('fileInput').files[0]);$('fileInput').value='';};$('loadText').onclick=()=>loadContent($('newickInput').value,t('붙여넣은 트리'));
@@ -249,4 +251,4 @@ async function exportFile(format){try{if(format==='project'){projectSave();retur
 document.querySelectorAll('[data-export]').forEach(b=>b.onclick=async()=>{b.disabled=true;await exportFile(b.dataset.export);b.disabled=false;});
 document.addEventListener('keydown',e=>{const editing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName),modal=!!document.querySelector('dialog[open]');if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();projectSave();return;}if(editing||modal)return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo();return;}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();redo();return;}if(e.ctrlKey||e.metaKey||e.altKey)return;switch(e.key.toLowerCase()){case'c':toggleCollapse();break;case'r':e.shiftKey?rerootSelected():rotateSelected();break;case'f':fitView();break;case'+':case'=':zoom(1.2);break;case'-':zoom(1/1.2);break;case'/':e.preventDefault();setTab('nodes');$('search').focus();break;case'escape':selected=null;render();$('inspector').classList.remove('open');break;}});
 $('languageSelect').addEventListener('change',()=>{endDrag();setLanguage($('languageSelect').value);try{localStorage.setItem(languageStorageKey,getLanguage());}catch{}applyLanguage();render();renderGroupList();groupTargetPreview();updateBackgroundPreview();fitView();toast(t('언어를 변경했습니다.'));});
-demo();let restored=false;try{const raw=localStorage.getItem(STORE);if(raw){const p=validateProject(JSON.parse(raw));({tree,styles,groups,options,title,sample}=p);index=indexTree(tree);selected=[...index.nodes.values()].find(n=>n.children.length&&styles[n.id]?.collapsed)?.id||tree.id;restored=true;}}catch{toast(t('이전 자동 저장을 불러오지 못해 예제 트리를 열었습니다.'),true);}render();requestAnimationFrame(fitView);if(restored)setSaveStatus('이전 자동 저장 작업 복원됨');else scheduleSave();
+demo();let restored=false;try{const raw=localStorage.getItem(STORE);if(raw){const p=validateProject(JSON.parse(raw));({tree,styles,groups,delimitation,options,title,sample}=p);index=indexTree(tree);selected=[...index.nodes.values()].find(n=>n.children.length&&styles[n.id]?.collapsed)?.id||tree.id;restored=true;}}catch{toast(t('이전 자동 저장을 불러오지 못해 예제 트리를 열었습니다.'),true);}render();requestAnimationFrame(fitView);if(restored)setSaveStatus('이전 자동 저장 작업 복원됨');else scheduleSave();
