@@ -2744,22 +2744,22 @@ function csvCells(text,delimiter){
   else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&text[i+1]==='\n')i++;row.push(cell.trim());if(row.some(Boolean))rows.push(row);row=[];cell='';}
   else cell+=ch;
  }
- if(quoted)throw new Error('Unclosed quoted field');
+ if(quoted)throw new Error(t('Unclosed quoted field'));
  row.push(cell.trim());if(row.some(Boolean))rows.push(row);return rows;
 }
 function parseDelimitationTable(text,format='auto',filename=''){
  const raw=String(text??'').replace(/^\uFEFF/,'').trim();
- if(!raw)throw new Error('Empty species delimitation file');
+ if(!raw)throw new Error(t('Empty species delimitation file'));
  const named=(name,assignments)=>[{name,assignments}];
  const forced=String(format).toLowerCase(),file=String(filename).toLowerCase();
  if(forced==='abgd'||(forced==='auto'&&/^\s*Group\s*\[\s*\d+\s*\]\s*n\s*:/mi.test(raw))){
   const assignments={};let groups=0;
   for(const line of raw.split(/\r?\n/)){const m=line.match(/^\s*Group\s*\[\s*(\d+)\s*\]\s*n\s*:\s*(\d+)\s*;\s*id\s*:\s*(.+)\s*$/i);if(!m)continue;
    const names=m[3].trim().split(/\s+/).filter(Boolean);
-   if(names.length!==Number(m[2]))throw new Error('ABGD group '+m[1]+' count does not match n');
-   for(const name of names){if(Object.hasOwn(assignments,name))throw new Error('Duplicate specimen: '+name);assignments[name]='Group '+m[1];}groups++;
+   if(names.length!==Number(m[2]))throw new Error(t('ABGD group {group} count does not match n',{group:m[1]}));
+   for(const name of names){if(Object.hasOwn(assignments,name))throw new Error(t('Duplicate specimen: {name}',{name}));assignments[name]='Group '+m[1];}groups++;
   }
-  if(!groups)throw new Error('No ABGD groups found');return named('ABGD',assignments);
+  if(!groups)throw new Error(t('No ABGD groups found'));return named('ABGD',assignments);
  }
  if(forced==='bptp'||forced==='mptp'||(forced==='auto'&&/(?:PTPMLPartition|PTPhSupportPartition|mptp)/i.test(file))||
   (forced==='auto'&&/^\s*Species\s+\d+\s*(?:\(\s*support\s*=|:)/mi.test(raw))){
@@ -2771,30 +2771,30 @@ function parseDelimitationTable(text,format='auto',filename=''){
    if(!current||!v||/^(Command:|Number of|Null-model|Best score|Number of delimited)/i.test(v))continue;
    const taxa=v.split(/\s*,\s*/).map(x=>x.trim()).filter(Boolean);
    for(const name of taxa){if(/\s/.test(name)&&!/^['"]/.test(name))continue;
-    const cleaned=name.replace(/^['"]|['"]$/g,'');if(Object.hasOwn(assignments,cleaned)&&assignments[cleaned]!==current)throw new Error('Duplicate PTP specimen: '+cleaned);
+    const cleaned=name.replace(/^['"]|['"]$/g,'');if(Object.hasOwn(assignments,cleaned)&&assignments[cleaned]!==current)throw new Error(t('Duplicate PTP specimen: {name}',{name:cleaned}));
     assignments[cleaned]=current;}
   }
-  if(!groups||!Object.keys(assignments).length)throw new Error('No species partition found');
-  return named(forced==='mptp'||/mptp/i.test(file)?'mPTP':'bPTP',assignments);
+  if(!groups||!Object.keys(assignments).length)throw new Error(t('No species partition found'));
+  return named(forced==='mptp'||/mptp/i.test(file)||/Number of delimited species\s*:/i.test(raw)?'mPTP':'bPTP',assignments);
  }
  const delimiter=(raw.split(/\r?\n/,1)[0].includes('\t')?'\t':',');
  const rows=csvCells(raw,delimiter);
- if(rows.length<2&&forced!=='asap')throw new Error('A data table needs a header and rows');
+ if(rows.length<2&&forced!=='asap')throw new Error(t('A data table needs a header and rows'));
  if(forced==='asap'||(forced==='auto'&&/Partition_\d+\.csv$/i.test(file)&&rows[0].length===2)){
-  const a={};for(const r of rows){if(r.length<2||!delimName(r[0])||!delimGroup(r[1]))continue;if(Object.hasOwn(a,r[0])&&a[r[0]]!==r[1])throw new Error('Conflicting ASAP assignment');a[r[0]]=r[1];}
-  if(!Object.keys(a).length)throw new Error('No ASAP assignments');return named('ASAP',a);
+  const a={};for(const r of rows){if(r.length<2||!delimName(r[0])||!delimGroup(r[1]))continue;if(Object.hasOwn(a,r[0])&&a[r[0]]!==r[1])throw new Error(t('Conflicting ASAP assignment'));a[r[0]]=r[1];}
+  if(!Object.keys(a).length)throw new Error(t('No ASAP assignments'));return named('ASAP',a);
  }
  const headers=rows[0].map(h=>h.toLowerCase().trim().replace(/[\s_-]+/g,''));
  const find=names=>headers.findIndex(h=>names.includes(h));
  const gmyc=find(['gmycspec']), sample=find(['samplename','sampleid','processid','taxon','tip','label']);
  if(forced==='gmyc'||(forced==='auto'&&gmyc>=0&&sample>=0)){
-  if(gmyc<0||sample<0)throw new Error('Expected GMYC_spec and sample_name columns');
+  if(gmyc<0||sample<0)throw new Error(t('Expected GMYC_spec and sample_name columns'));
   const a={};for(const r of rows.slice(1))if(r[sample]&&r[gmyc])a[r[sample]]=r[gmyc];
   return named('GMYC',a);
  }
  const bin=find(['binuri','bin']),boldName=find(['processid','sampleid','recordid']);
  if(forced==='bold'||(forced==='auto'&&bin>=0&&boldName>=0)){
-  if(bin<0||boldName<0)throw new Error('Expected BOLD processid/sampleid and bin_uri columns');
+  if(bin<0||boldName<0)throw new Error(t('Expected BOLD processid/sampleid and bin_uri columns'));
   const a={};for(const r of rows.slice(1))if(r[boldName]&&r[bin])a[r[boldName]]=r[bin];
   return named('BIN',a);
  }
@@ -2802,20 +2802,20 @@ function parseDelimitationTable(text,format='auto',filename=''){
  const methodCol=find(['method','algorithm','analysis']);
  const groupCol=find(['group','cluster','species','delimitation','partition']);
  if(forced==='long'||(forced==='auto'&&tipCol>=0&&methodCol>=0&&groupCol>=0)){
-  if(tipCol<0||methodCol<0||groupCol<0)throw new Error('Long table needs taxon, method, group columns');
+  if(tipCol<0||methodCol<0||groupCol<0)throw new Error(t('Long table needs taxon, method, group columns'));
   const output=new Map();for(const r of rows.slice(1)){const [tip,method,group]=[r[tipCol],r[methodCol],r[groupCol]];if(!tip||!method||!group)continue;
-   if(!output.has(method))output.set(method,{});if(Object.hasOwn(output.get(method),tip)&&output.get(method)[tip]!==group)throw new Error('Conflicting assignment: '+tip);
+   if(!output.has(method))output.set(method,{});if(Object.hasOwn(output.get(method),tip)&&output.get(method)[tip]!==group)throw new Error(t('Conflicting assignment: {tip}',{tip}));
    output.get(method)[tip]=group;}
   return [...output].map(([name,assignments])=>({name,assignments}));
  }
  if(forced==='wide'||forced==='auto'){
-  if(rows[0].length<2)throw new Error('Wide table needs at least two columns');
+  if(rows[0].length<2)throw new Error(t('Wide table needs at least two columns'));
   const result=rows[0].slice(1).map(n=>({name:n,assignments:{}}));
-  if(result.some(x=>!x.name))throw new Error('Empty method header');
-  for(const r of rows.slice(1)){if(!r[0])continue;result.forEach((m,i)=>{if(r[i+1]){if(Object.hasOwn(m.assignments,r[0])&&m.assignments[r[0]]!==r[i+1])throw new Error('Conflicting assignment: '+r[0]);m.assignments[r[0]]=r[i+1];}});}
+  if(result.some(x=>!x.name))throw new Error(t('Empty method header'));
+  for(const r of rows.slice(1)){if(!r[0])continue;result.forEach((m,i)=>{if(r[i+1]){if(Object.hasOwn(m.assignments,r[0])&&m.assignments[r[0]]!==r[i+1])throw new Error(t('Conflicting assignment: {tip}',{tip:r[0]}));m.assignments[r[0]]=r[i+1];}});}
   return result;
  }
- throw new Error('Unsupported species delimitation format');
+ throw new Error(t('Unsupported species delimitation format'));
 }
 function matchDelimitation(tree,raw){
  const state=normalizeDelimitation(raw),leaves=[];walk(tree,n=>{if(!n.children.length)leaves.push(n);});
