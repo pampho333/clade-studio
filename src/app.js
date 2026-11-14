@@ -99,7 +99,82 @@ function drawGroups(defs,background,foreground,textLayer,fallbackRight){
    if(group.showName){const lines=group.name.split('\n'),step=group.labelSize*1.3,first=(run.top+run.bottom)/2-(lines.length-1)*step/2+group.labelSize*.32;lines.forEach((line,j)=>appendLabel(foreground,{x:group.labelPosition==='center'?x+widths[group.lane]/2:x+(group.showBar?group.barWidth:0)+10,'text-anchor':group.labelPosition==='center'?'middle':'start',y:first+j*step,fill:'#111111','font-size':group.labelSize,'font-weight':600,'font-family':fontFamilyFor(options)},line,{italicMode:group.italic?'scientific':'none'}));}
   }
  });
+ return cursor;
 }
+
+
+// Render every delimitation column on the live SVG, including its export clone.
+function drawDelimitation(svg,defs,startX,fontFamily){
+ if(!delimitation.settings.show||!delimMatched.methods.length||options.layout!=='rectangular')return;
+ const data=delimMatched,settings=data.settings,original=data.methods;
+ const agreed=original.length>1?consensusAssignments(data):new Map();
+ const methods=original.slice();
+ if(settings.consensus&&original.length>1)methods.push({name:t('합의'),byId:agreed});
+ const layer=append(svg,'g',{'data-layer':'species-delimitation','pointer-events':'none'});
+ const hatched=append(defs,'pattern',{id:'species-mixed-pattern',patternUnits:'userSpaceOnUse',width:6,height:6});
+ append(hatched,'rect',{width:6,height:6,fill:'#e8e8e8'});
+ append(hatched,'path',{d:'M0 6L6 0M-1 1L1 -1M5 7L7 5',stroke:'#555','stroke-width':1});
+ const palette=['#215e89','#c25a35','#2a8064','#8259aa','#a16b27','#ac3c77','#457a34','#796547','#277e90','#ab4939'];
+ const colorFor=(name,keys)=>{
+  if(settings.colorMode==='single')return settings.solidColor;
+  if(settings.colorMode==='alternate')return (keys.indexOf(name)%2)?'#999999':'#242424';
+  let hash=0;for(const c of name)hash=(Math.imul(hash,33)+c.charCodeAt(0))>>>0;
+  return palette[hash%palette.length];
+ };
+ const disagree=new Set();if(settings.disagreements&&original.length>1){
+  for(const leaf of data.leaves)if(!agreed.has(leaf.id))disagree.add(leaf.id);
+ }
+ const visibleDisagreement=layout.terminals.map(n=>{
+  if(!disagree.size)return false;if(!n.collapsed)return disagree.has(n.id);
+  let found=false;walk(n.node,x=>{if(!x.children.length&&disagree.has(x.id))found=true;});return found;
+ });
+ let cursor=startX;
+ for(const method of methods){
+  const result=delimitationRuns(tree,layout,method),groupNames=[...result.groups.keys()];
+  const labelWidth=settings.showLabels?Math.min(250,Math.max(0,...groupNames.map(x=>x.length*options.fontSize*.58))):0;
+  const columnWidth=Math.max(settings.barWidth+settings.columnGap+labelWidth,
+     settings.headerRotation==='horizontal'?method.name.length*options.fontSize*.66+14:settings.barWidth+settings.columnGap);
+  const x=cursor,hx=x+settings.barWidth/2;
+  append(layer,'text',{x:hx,y:-18,transform:settings.headerRotation==='vertical'?'rotate(-90 '+hx+' -18)':null,
+   'text-anchor':settings.headerRotation==='vertical'?'start':'middle','font-size':options.fontSize,'font-family':fontFamily,'font-weight':600,fill:'#202020'},method.name);
+  const groupRuns=new Map();
+  for(const run of result.runs){
+   const mid=(run.top+run.bottom)/2,isSingleton=run.tipCount===1&&!run.mixed,fill=run.mixed?'url(#species-mixed-pattern)':colorFor(run.group,groupNames);
+   if(!run.mixed){const list=groupRuns.get(run.group)||[];list.push(run);groupRuns.set(run.group,list);}
+   if(isSingleton&&settings.singleton==='dot'){
+    append(layer,'circle',{cx:hx,cy:mid,r:Math.max(2.2,settings.barWidth*.33),fill});
+   }else{
+    const height=isSingleton?Math.min(8,Math.max(4,run.bottom-run.top)):Math.max(1,run.bottom-run.top);
+    append(layer,'rect',{x,y:mid-height/2,width:settings.barWidth,height,fill,stroke:run.mixed?'#666':'none'});
+   }
+   if(settings.disagreements&&visibleDisagreement.slice(run.first,run.last+1).some(Boolean))
+    append(layer,'rect',{x:x-2,y:run.top-2,width:settings.barWidth+4,height:run.bottom-run.top+4,
+     fill:'none',stroke:'#c5432d','stroke-width':1.5});
+   if(settings.showLabels)append(layer,'text',{
+    x:settings.labelPosition==='center'?x+columnWidth/2:x+settings.barWidth+5,
+    y:mid+options.fontSize*.3,'text-anchor':settings.labelPosition==='center'?'middle':'start',
+    'font-family':fontFamily,'font-size':options.fontSize,fill:'#303030'
+   },run.mixed?t('섞임'):run.group);
+   if(run.mixed)append(layer,'text',{x:x+settings.barWidth+2,y:mid+4,'font-size':11,fill:'#a64a2e'},'≠');
+  }
+  for(const [name,runs] of groupRuns){
+   if(runs.length>1)for(let k=0;k<runs.length-1;k++)
+    append(layer,'line',{x1:hx,x2:hx,y1:runs[k].bottom,y2:runs[k+1].top,
+     stroke:'#888','stroke-dasharray':'3 3','stroke-width':.9});
+   if(runs.length>1||result.nonMonophyletic.has(name))for(const run of runs)
+    append(layer,'text',{x:x-10,y:run.top+8,fill:'#a53b26','font-size':Math.max(10,options.fontSize-3)},'!');
+  }
+  cursor+=columnWidth;
+ }
+ if(settings.legend){
+  const legends=[t('줄무늬: 접힌 혼합 그룹'),t('!: 단계통 아님'),t('빨간 테두리: 방법 불일치'),t('점: 싱글턴')];
+  let x=startX;for(const label of legends){
+   append(layer,'text',{x,y:layout.height+42,'font-family':fontFamily,'font-size':Math.max(10,options.fontSize-3),fill:'#444'},label);
+   x+=Math.max(120,label.length*(options.fontSize-2)*.64+24);
+  }
+ }
+}
+
 function applyView(){$('viewportGroup').setAttribute('transform',`translate(${view.x},${view.y}) scale(${view.k})`);$('zoomValue').textContent=`${Math.round(view.k*100)}%`;}
 function fitView(){const r=$('canvasViewport').getBoundingClientRect();if(!r.width||!r.height)return;view.k=Math.max(.015,Math.min(1.5,Math.min((r.width-34)/bounds.width,(r.height-34)/bounds.height)));view.x=(r.width-bounds.width*view.k)/2-bounds.x*view.k;view.y=(r.height-bounds.height*view.k)/2-bounds.y*view.k;applyView();}
 function zoom(factor,point){const r=$('canvasViewport').getBoundingClientRect(),p=point||{x:r.width/2,y:r.height/2},k=clamp(view.k*factor,.015,8);view.x=p.x-(p.x-view.x)*k/view.k;view.y=p.y-(p.y-view.y)*k/view.k;view.k=k;applyView();}
